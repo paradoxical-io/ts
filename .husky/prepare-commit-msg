@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+COMMIT_MSG_FILE=$1
+
+original_message=`cat $COMMIT_MSG_FILE`
+
+.husky/lib/prepare-commit-message.rb "$original_message" > "$COMMIT_MSG_FILE"

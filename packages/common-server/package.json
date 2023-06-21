@@ -1,0 +1,66 @@
+{
+  "name": "@paradox/common-server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Common code for paradox services",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
+    "compile": "yarn common:compile",
+    "test": "yarn common:test",
+    "lint": "yarn common:lint",
+    "lint:fix": "yarn common:lint:fix"
+  },
+  "author": "Anton Kropp",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/archiver": "^5.3.1",
+    "@types/async-retry": "^1.4.2",
+    "@types/cls-hooked": "^4.3.0",
+    "@types/convict": "4.2.1",
+    "@types/dockerode": "^2.5.20",
+    "@types/jest-when": "^2.7.0",
+    "@types/lru-cache": "^5.1.0",
+    "@types/reflect-metadata": "^0.1.0",
+    "@types/request-promise": "^4.1.44",
+    "@types/seedrandom": "^2.4.28",
+    "@types/temp": "^0.9.1",
+    "@types/unzipper": "^0.10.3",
+    "@types/winston": "^2.4.4",
+    "@types/wtfnode": "^0.7.0",
+    "dockerode": "^3.0.2",
+    "jest-when": "^2.7.0",
+    "portfinder": "^1.0.25"
+  },
+  "dependencies": {
+    "@paradox/common": "workspace:packages/common",
+    "@paradox/types": "workspace:packages/types",
+    "@types/ssh2-sftp-client": "^7.0.1",
+    "archiver": "^5.3.1",
+    "axios": "^0.19.2",
+    "chalk": "^4.1.2",
+    "cls-hooked": "^4.2.2",
+    "convict": "5.1.0",
+    "csv": "^6.1.0",
+    "csv-parser": "^2.3.3",
+    "csv-writer": "^1.6.0",
+    "date-fns-tz": "^2.0.0",
+    "hot-shots": "^6.4.1",
+    "lru-cache": "^6.0.0",
+    "mixpanel": "^0.11.0",
+    "request-promise": "^4.2.4",
+    "serialize-error": "^6.0.0",
+    "spark-md5": "^3.0.2",
+    "ssh2-sftp-client": "^8.1.0",
+    "temp": "^0.9.4",
+    "tree-kill": "^1.2.1",
+    "unzipper": "^0.10.11",
+    "winston": "^3.2.1"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  }
+}

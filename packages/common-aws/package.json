@@ -1,0 +1,43 @@
+{
+  "name": "@paradox/common-aws",
+  "version": "0.0.0",
+  "description": "Common aws for paradox services",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
+    "compile": "yarn common:compile",
+    "test": "yarn common:test",
+    "test-int": "jest --forceExit --coverage --verbose -c jest.int.config.js",
+    "lint": "yarn common:lint",
+    "lint:fix": "yarn common:lint:fix"
+  },
+  "author": "Anton Kropp",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119",
+    "@types/aws4": "^1.11.3",
+    "@types/lodash": "^4.14.146",
+    "@types/nodemailer": "^6.4.0"
+  },
+  "optionalDependencies": {
+    "@paradox/common-test": "workspace:packages/common-test"
+  },
+  "dependencies": {
+    "@aws-sdk/cloudfront-signer": "^3.229.0",
+    "@aws/dynamodb-data-mapper": "^0.7.3",
+    "@aws/dynamodb-data-mapper-annotations": "^0.7.3",
+    "@paradox/common-server": "workspace:packages/common-server",
+    "@paradox/types": "workspace:packages/types",
+    "aws-lambda": "^1.0.7",
+    "aws-sdk": "^2.1399.0",
+    "datadog-lambda-js": "^3.59.0",
+    "joi": "^17.9.2",
+    "lodash": "^4.17.15"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+.run
+.test
+dist/
+.build
+.DS_Store
+
+reports
+**/node_modules
+yarn-offline
+
+
+# ignore aws creds
+.aws/credentials
+# ignore any suffixed creds files
+.aws/credentials.*
+
+**/.terraform/
+
+**/tsconfig.tsbuildinfo
+
+app/android/.settings
+app/android/.project
+.idea
+coverage
+yarn-error.log
+
+# terraform plan files
+.out.plan
+
+# python venv
+venv
+__pycache__
+
+**/.env
+**/.env.test
+
+temp/
+
+**/.eslintcache
+
+# intellij file based packages
+*.ipr
+*.iws
+
+# ingore sqlite db tests
+**/.db/runs
+
+.jest-cache
+
+copper.log
+
+# vscode workspace settings
+.vscode/settings.json
+
+# never include private keys
+*.private.pem
+
+.keys/
+
+__trace

@@ -1,0 +1,60 @@
+{
+  "name": "@paradox/ts",
+  "private": true,
+  "packageManager": "yarn@3.6.0",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "scripts": {
+    "prepublish": "yarn compile",
+    "publish": "yarn clean && yarn compile && yarn workspaces foreach --no-private npm publish --tolerate-republish",
+    "clean": "yarn workspaces foreach -v -p run clean | gnomon",
+    "clean-compile": "yarn run clean && yarn run compile",
+    "clean-nodemodules": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
+    "clean-test-cache": "yarn test --clearCache",
+    "common:compile": "cd $INIT_CWD && tsc",
+    "common:lint": "cd $INIT_CWD && eslint --cache --ext .js,.jsx,.ts,.tsx ./src --quiet --rule 'prettier/prettier: error'",
+    "common:lint-staged": "cd $INIT_CWD && lint-staged",
+    "common:lint:fix": "cd $INIT_CWD && eslint --ext .js,.jsx,.ts,.tsx  ./src --fix --rule 'prettier/prettier: error'",
+    "common:test": "cd $INIT_CWD && PARADOX_LOG_LEVEL=error jest --forceExit --passWithNoTests --verbose",
+    "compile": "tsc -b --pretty",
+    "install:commit-hooks": "git config --unset core.hooksPath || yarn run -B husky install",
+    "lint": "yarn lint:ts",
+    "lint:ts": "echo 'Typescript linting...' && yarn workspaces foreach -v -p -j 4 --exclude 'root' run lint",
+    "lint:fix": "yarn workspaces foreach -v -p -j 4 --exclude 'root' run lint:fix",
+    "nuclear-build": "yarn run clean-nodemodules && yarn install && npx wsrun --exclude-missing --parallel nucleaur-build && yarn run clean-compile",
+    "package": "yarn workspaces foreach -v -p run package",
+    "pre-commit": "pretty-quick --staged && lint-staged",
+    "test": "yarn workspaces foreach -v -p -i run test --passWithNoTests --forceExit --verbose --runInBand ",
+    "test-coverage": "yarn test --coverage",
+    "watch": "tsc -b -w"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.13",
+    "@types/node": "^16.18.8",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-airbnb-typescript": "^14.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-ban": "^1.5.2",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-jest": "^25.2.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "fast-check": "^2.3.0",
+    "gnomon": "^1.5.0",
+    "husky": "^8.0.1",
+    "jest": "^26.4.2",
+    "lint-staged": "^13.2.2",
+    "prettier": "^2.8.8",
+    "pretty-quick": "^3.1.1",
+    "ts-essentials": "^3.0.4",
+    "ts-jest": "^26.3.0",
+    "ts-loader": "^9.3.1",
+    "typescript": "4.9.4"
+  }
+}

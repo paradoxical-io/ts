@@ -1,0 +1,33 @@
+{
+  "name": "@paradox/common-sql",
+  "version": "0.0.0",
+  "files": [
+    "dist/"
+  ],
+  "description": "Common sql code for paradox services",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
+    "test": "yarn common:test",
+    "compile": "yarn common:compile",
+    "lint": "yarn common:lint",
+    "lint:fix": "yarn common:lint:fix"
+  },
+  "author": "Anton Kropp",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/mysql": "^2.15.8",
+    "sqlite3": "5.1.6"
+  },
+  "dependencies": {
+    "@paradox/common-server": "workspace:packages/common-server",
+    "mysql": "^2.17.1",
+    "typeorm": "^0.2.45"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  }
+}

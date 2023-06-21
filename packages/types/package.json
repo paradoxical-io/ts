@@ -1,0 +1,24 @@
+{
+  "name": "@paradox/types",
+  "version": "1.0.0",
+  "description": "Paradox shared types",
+  "files": [
+    "dist/"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
+    "compile": "yarn common:compile",
+    "test": "yarn common:test",
+    "lint": "yarn common:lint",
+    "lint:fix": "yarn common:lint:fix"
+  },
+  "author": "Anton Kropp",
+  "license": "MIT",
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  }
+}
