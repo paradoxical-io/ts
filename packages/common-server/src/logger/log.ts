@@ -6,7 +6,6 @@ import { serializeError } from 'serialize-error';
 import * as winston from 'winston';
 import { LoggerOptions } from 'winston';
 
-import { AuditUser } from '../audit';
 import { isLocal } from '../env';
 import { md5 } from '../hash';
 import { isAxiosError } from '../http';
@@ -16,7 +15,6 @@ import { PathRedaction, redact, redactKey } from './redaction';
 
 export interface Cls {
   trace?: string;
-  userId?: AuditUser;
   subTrace?: string;
 
   [k: string]: string | undefined;

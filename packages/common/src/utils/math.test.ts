@@ -1,6 +1,5 @@
-import { Amount } from '@paradoxical-io/types';
-
 import { amountRound } from './math';
+import { Amount } from './text';
 
 const fc = require('fast-check');
 

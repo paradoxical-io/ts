@@ -9,6 +9,13 @@ export type Year = Brand<number, 'Year'>;
 export type Day = Brand<number, 'Day'>;
 export type Month = Brand<number, 'Month'>;
 
+// time brands
+export type Milliseconds = Brand<number, 'Milliseconds'>;
+export type Seconds = Brand<number, 'Seconds'>;
+export type Minutes = Brand<number, 'Minutes'>;
+export type Hours = Brand<number, 'Hours'>;
+export type Days = Brand<number, 'Days'>;
+
 export type EpochMS = Brand<number, 'EpochMS'>;
 export type EpochSeconds = Brand<number, 'EpochSeconds'>;
 export type ISODateString = Brand<string, 'ISODateString'>;

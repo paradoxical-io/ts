@@ -1,6 +1,5 @@
-import { Amount } from '@paradoxical-io/types';
-
 import { floorDecimals } from './rounding';
+import { Amount } from './text';
 
 /**
  * Round to 5 decimal digits (to make things like 0.449999999 caused by floating point precision to be 0.45000), and then floor to two digits

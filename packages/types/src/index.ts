@@ -11,13 +11,11 @@ export * from './errorTypes';
 export * from './errorWithCode';
 export * from './exceptions';
 export * from './exhaustiveness';
-export * from './images';
 export * from './json';
 export * from './keys';
 export * from './nullish';
 export * from './types';
 export * from './util';
-export * from './version';
 
 export interface Envelope<T> {
   /** the http status code */

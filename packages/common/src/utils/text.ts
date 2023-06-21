@@ -1,6 +1,11 @@
-import { Amount, Brand } from '@paradoxical-io/types';
+import { Brand } from '@paradoxical-io/types';
 
 import { intersperse } from '../extensions';
+
+/**
+ * Financial amount
+ */
+export type Amount = Brand<number, 'Amount'>;
 
 const emojiRegexCreator = require('emoji-regex');
 

@@ -1,7 +1,6 @@
 export * from './assertions';
 export * from './brands';
 export * from './email';
-export * from './features';
 export * from './ids';
 export * from './images';
 export * from './math';
@@ -12,5 +11,3 @@ export * from './retry';
 export * from './rounding';
 export * from './sortBy';
 export * from './text';
-export * from './version';
-export * from './versionParser';

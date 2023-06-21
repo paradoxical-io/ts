@@ -1,5 +1,4 @@
 export * from './code';
-export * from './consts';
 export * from './datetime';
 export * from './di';
 export * from './errors';

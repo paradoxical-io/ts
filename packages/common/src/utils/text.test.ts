@@ -1,7 +1,7 @@
 import { safeExpect } from '@paradoxical-io/common-test';
-import { Amount } from '@paradoxical-io/types';
 
 import {
+  Amount,
   AmountFormatOptions,
   emptyToUndefined,
   formatAmount,

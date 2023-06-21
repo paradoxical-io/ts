@@ -1,5 +1,7 @@
-import { nullOrUndefined, RandomSeed } from '@paradoxical-io/types';
+import { Brand, nullOrUndefined } from '@paradoxical-io/types';
 import seedrandom = require('seedrandom');
+
+export type RandomSeed = Brand<string, 'RandomSeed'>;
 
 type RandomGenerator = () => number;
 
@@ -26,7 +28,7 @@ function random(seed?: RandomSeed | RandomGenerator): number {
 }
 
 /**
- * Generates a streem of random numbers based on the seed
+ * Generates a stream of random numbers based on the seed
  * @param seed
  */
 export function randomGenerator(seed: RandomSeed): RandomGenerator {

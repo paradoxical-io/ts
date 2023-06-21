@@ -1,5 +1,3 @@
-import { asBrandSafe } from '@paradoxical-io/common';
-import { Brand, IPAddress, Timezone } from '@paradoxical-io/types';
 import { createNamespace } from 'cls-hooked';
 import uuid = require('uuid');
 
@@ -43,50 +41,6 @@ export function setCurrentUserId<T extends string>(userId: T) {
     }
   }
 }
-
-/**
- * Sets a trace for the current user id available in all async calls and logging methods
- * @param userId
- */
-export function setCurrentUserTimezone(timezone: Timezone) {
-  try {
-    ns.set('displayTimezone', timezone);
-  } catch (e) {
-    if (process.env.JEST_TEST) {
-      // allow this to not be set in tests that dont have a cls created
-    } else {
-      throw e;
-    }
-  }
-}
-
-export const getCurrentUserTimezone = (): Timezone | undefined => {
-  const tz = ns.get('displayTimezone');
-
-  return tz as Timezone;
-};
-
-/**
- * Who is doing the action
- */
-export const getAuditActionUser = (): string | undefined => ns.get('actingUser');
-
-export function setAuditActionUser(user: string) {
-  ns.set('actingUser', user);
-}
-
-export function setRequestIPAddress(ip: IPAddress) {
-  ns.set('requestIPAddress', ip);
-}
-
-export function setSardineSessionKey(key: string) {
-  ns.set('sardineSessionKey', key);
-}
-
-export const getRequestIPAddress = (): IPAddress | undefined => asBrandSafe(ns.get('requestIPAddress'));
-
-export const getSardineSessionKey = (): Brand<string, 'SardineSessionKey'> | undefined =>
-  asBrandSafe(ns.get('sardineSessionKey'));
 
 export const getOptionalContext = (): OptionalContext | undefined => ns.get('optionalContext');
 

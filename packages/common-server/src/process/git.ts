@@ -1,5 +1,5 @@
 import { SafeJson } from '@paradoxical-io/common';
-import { Brand, Sha } from '@paradoxical-io/types';
+import { Brand } from '@paradoxical-io/types';
 import * as child_process from 'child_process';
 import { exec } from 'child_process';
 import * as os from 'os';
@@ -46,6 +46,8 @@ export interface GitNotes {
   services: string[];
   banned?: boolean;
 }
+
+export type Sha = Brand<string, 'Sha'>;
 
 /**
  * Overwrites or sets the git note at the commit
