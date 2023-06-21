@@ -5,6 +5,9 @@
   "description": "Common code for paradox services",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
     "compile": "yarn common:compile",

@@ -52,7 +52,7 @@ temp/
 # ingore sqlite db tests
 **/.db/runs
 
-.jest-cache
+**/.jest-cache
 
 copper.log
 
