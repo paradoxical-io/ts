@@ -39,21 +39,7 @@ module.exports = {
   clearMocks: true,
 
   // Use this configuration option to add custom reporters to Jest
-  reporters: process.env.CI
-    ? [
-        'default',
-        `${CI_DATA.root}/packages/common-test/dist/jest/reporter.js`,
-        [
-          'jest-junit',
-          {
-            outputDirectory: `${CI_DATA.root}/reports/tests`,
-            outputName: `${CI_DATA.name}_tests.xml`,
-            usePathForSuiteName: 'true',
-          },
-        ],
-      ]
-    : undefined,
-
+  reporters: ['default', `${CI_DATA.root}/packages/common-test/dist/jest/reporter.js`],
   // Automatically reset mock state between every test
   resetMocks: true,
 
