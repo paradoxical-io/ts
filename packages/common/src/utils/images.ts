@@ -1,4 +1,4 @@
-import { Base64Image, Base64ImageUri } from '@paradox/types';
+import { Base64Image, Base64ImageUri } from '@paradoxical-io/types';
 
 export interface ImageData {
   height: number;

@@ -1,4 +1,4 @@
-import { Env } from '@paradox/types';
+import { Env } from '@paradoxical-io/types';
 import os from 'os';
 
 const envKey = 'PARADOX_ENV';

@@ -1,4 +1,4 @@
-import { JsonObject } from '@paradox/types';
+import { JsonObject } from '@paradoxical-io/types';
 
 export function sortBy<T>(field: keyof T) {
   // @ts-ignore

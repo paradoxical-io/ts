@@ -1,4 +1,4 @@
-import { bottom, EpochMS } from '@paradox/types';
+import { bottom, EpochMS } from '@paradoxical-io/types';
 
 import { ValueTransformer } from './transformers';
 

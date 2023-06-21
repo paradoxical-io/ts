@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { Milliseconds } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Milliseconds } from '@paradoxical-io/types';
 
 import { asMilli } from '../datetime';
 import { jitter, sleep, timeout, TimeoutError } from './timeout';

@@ -1,4 +1,4 @@
-import { HttpDDogMetrics, log, withMetrics, withNewTrace } from '@paradox/common-server';
+import { HttpDDogMetrics, log, withMetrics, withNewTrace } from '@paradoxical-io/common-server';
 import { Callback, Context } from 'aws-lambda';
 
 type PromiseHandler<TEvent = unknown, TResult = unknown> = (

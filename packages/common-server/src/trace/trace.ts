@@ -1,5 +1,5 @@
-import { asBrandSafe } from '@paradox/common';
-import { Brand, IPAddress, Timezone } from '@paradox/types';
+import { asBrandSafe } from '@paradoxical-io/common';
+import { Brand, IPAddress, Timezone } from '@paradoxical-io/types';
 import { createNamespace } from 'cls-hooked';
 import uuid = require('uuid');
 

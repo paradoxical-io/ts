@@ -1,4 +1,4 @@
-import { preciseTimeMilli } from '@paradox/common';
+import { preciseTimeMilli } from '@paradoxical-io/common';
 import { constants, NodeGCPerformanceDetail, PerformanceObserver } from 'perf_hooks';
 
 import { log } from '../logger';

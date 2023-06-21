@@ -1,7 +1,7 @@
 /* eslint-disable no-return-assign */
 
-import { EpochMS } from '@paradox/types';
-import { EpochSeconds } from '@paradox/types/dist/date';
+import { EpochMS } from '@paradoxical-io/types';
+import { EpochSeconds } from '@paradoxical-io/types/dist/date';
 import { addMilliseconds } from 'date-fns';
 import addDays from 'date-fns/addDays';
 import addHours from 'date-fns/addHours';

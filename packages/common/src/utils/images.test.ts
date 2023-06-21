@@ -1,4 +1,4 @@
-import { Base64Image } from '@paradox/types';
+import { Base64Image } from '@paradoxical-io/types';
 
 import { toBase64ImageUri } from './images';
 

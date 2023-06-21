@@ -1,6 +1,6 @@
-import { asSeconds } from '@paradox/common';
-import { safeExpect } from '@paradox/common-test';
-import { Seconds } from '@paradox/types';
+import { asSeconds } from '@paradoxical-io/common';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Seconds } from '@paradoxical-io/types';
 
 import { determineRetryDelay, RepublishMessage } from './consumer';
 

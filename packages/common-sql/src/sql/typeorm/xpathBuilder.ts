@@ -1,4 +1,4 @@
-import { Brand } from '@paradox/types';
+import { Brand } from '@paradoxical-io/types';
 
 export type XPath = Brand<string, 'XPath'>;
 

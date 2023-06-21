@@ -1,4 +1,4 @@
-import { IPAddress } from '@paradox/types';
+import { IPAddress } from '@paradoxical-io/types';
 
 import { log } from '../logger';
 

@@ -1,4 +1,4 @@
-import { extendJest, safeExpect } from '@paradox/common-test';
+import { extendJest, safeExpect } from '@paradoxical-io/common-test';
 
 import { consistentChance, consistentHash, consistentHashExperimentKey } from './consistent';
 

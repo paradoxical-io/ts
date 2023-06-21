@@ -1,4 +1,4 @@
-import { currentEnvironment, isLocal, isRemote, log, Metrics } from '@paradox/common-server';
+import { currentEnvironment, isLocal, isRemote, log, Metrics } from '@paradoxical-io/common-server';
 import { Pool } from 'mysql';
 import { Connection, createConnection } from 'typeorm';
 import { MysqlDriver } from 'typeorm/driver/mysql/MysqlDriver';

@@ -1,3 +1,3 @@
-## @paradox/common-aws
+## @paradoxical-io/common-aws
 
 Code common to aws

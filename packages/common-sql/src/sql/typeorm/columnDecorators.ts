@@ -1,4 +1,4 @@
-import { currentEnvironment } from '@paradox/common-server';
+import { currentEnvironment } from '@paradoxical-io/common-server';
 import { Column, ColumnOptions, ColumnType } from 'typeorm';
 
 const mysqlSqliteTypeMapping: { [key: string]: ColumnType } = {

@@ -1,6 +1,6 @@
 import asyncRetry = require('async-retry');
-import { defaultTimeProvider, isExpired, sleep } from '@paradox/common';
-import { Milliseconds, notNullOrUndefined } from '@paradox/types';
+import { defaultTimeProvider, isExpired, sleep } from '@paradoxical-io/common';
+import { Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
 
 export type Result<T> =
   | {

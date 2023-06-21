@@ -1,5 +1,5 @@
-import { Limiter } from '@paradox/common';
-import { ErrorCode, ErrorWithCode } from '@paradox/types';
+import { Limiter } from '@paradoxical-io/common';
+import { ErrorCode, ErrorWithCode } from '@paradoxical-io/types';
 import { Connection, EntityManager, ObjectLiteral, QueryRunner, Repository } from 'typeorm';
 import { DatabaseType } from 'typeorm/driver/types/DatabaseType';
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';

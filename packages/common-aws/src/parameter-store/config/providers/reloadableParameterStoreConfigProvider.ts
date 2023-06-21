@@ -1,6 +1,6 @@
-import { jitter, lazy, sleep } from '@paradox/common';
-import { ConfigProvider, ProvidedConfigValue, ReloadableProvidedValue } from '@paradox/common-server';
-import { Milliseconds } from '@paradox/types';
+import { jitter, lazy, sleep } from '@paradoxical-io/common';
+import { ConfigProvider, ProvidedConfigValue, ReloadableProvidedValue } from '@paradoxical-io/common-server';
+import { Milliseconds } from '@paradoxical-io/types';
 
 import { ParameterStoreApi } from '../../api';
 

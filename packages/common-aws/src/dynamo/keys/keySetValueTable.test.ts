@@ -1,4 +1,4 @@
-import { mock } from '@paradox/common-test/dist/jest';
+import { mock } from '@paradoxical-io/common-test/dist/jest';
 
 import { KeySetValueTable } from './keySetValueTable';
 import { KeyValueTable } from './keyTable';

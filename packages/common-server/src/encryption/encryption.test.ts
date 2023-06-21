@@ -1,4 +1,4 @@
-import { Brand, Encrypted, PrivateKey, PrivateKeyPassphrase, PublicKey } from '@paradox/types';
+import { Brand, Encrypted, PrivateKey, PrivateKeyPassphrase, PublicKey } from '@paradoxical-io/types';
 import { generateKeyPairSync } from 'crypto';
 
 import { Encryption } from './encryption';

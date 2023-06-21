@@ -1,4 +1,4 @@
-import { chance, deepSort, SafeJson } from '@paradox/common';
+import { chance, deepSort, SafeJson } from '@paradoxical-io/common';
 import { createHash } from 'crypto';
 
 /**

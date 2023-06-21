@@ -1,4 +1,4 @@
-import { NotImplementedError } from '@paradox/types';
+import { NotImplementedError } from '@paradoxical-io/types';
 import _ from 'lodash';
 
 interface ErrorWithCode {

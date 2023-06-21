@@ -1,4 +1,4 @@
-import { Brand } from '@paradox/types';
+import { Brand } from '@paradoxical-io/types';
 import { CipherGCM, createCipheriv, createDecipheriv, DecipherGCM, randomBytes } from 'crypto';
 import * as util from 'util';
 

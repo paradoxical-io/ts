@@ -1,5 +1,5 @@
 {
-  "name": "@paradox/common-sql",
+  "name": "@paradoxical-io/common-sql",
   "version": "0.0.0",
   "files": [
     "dist/"
@@ -21,7 +21,7 @@
     "sqlite3": "5.1.6"
   },
   "dependencies": {
-    "@paradox/common-server": "workspace:packages/common-server",
+    "@paradoxical-io/common-server": "workspace:packages/common-server",
     "mysql": "^2.17.1",
     "typeorm": "^0.2.45"
   },

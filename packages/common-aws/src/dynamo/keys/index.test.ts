@@ -1,4 +1,4 @@
-import { usingEnv } from '@paradox/common-test';
+import { usingEnv } from '@paradoxical-io/common-test';
 
 import { dynamoTableName } from '../util';
 

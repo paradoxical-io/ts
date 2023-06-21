@@ -1,4 +1,4 @@
-import { AppVersion } from '@paradox/types';
+import { AppVersion } from '@paradoxical-io/types';
 
 type PieceComparison = '>' | '=' | '<';
 

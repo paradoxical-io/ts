@@ -1,5 +1,5 @@
 {
-  "name": "@paradox/common",
+  "name": "@paradoxical-io/common",
   "version": "1.0.0",
   "description": "Common code for all paradox projects",
   "files": [
@@ -17,7 +17,7 @@
   "author": "Anton Kropp",
   "license": "MIT",
   "devDependencies": {
-    "@paradox/common-test": "workspace:packages/common-test",
+    "@paradoxical-io/common-test": "workspace:packages/common-test",
     "@types/runes": "^0.4.1",
     "@types/seedrandom": "^2.4.28",
     "@types/uuid": "^3.4.5",
@@ -27,7 +27,7 @@
     "portfinder": "^1.0.25"
   },
   "dependencies": {
-    "@paradox/types": "workspace:packages/types",
+    "@paradoxical-io/types": "workspace:packages/types",
     "async-retry": "^1.3.1",
     "bottleneck": "^2.19.5",
     "date-fns": "^2.8.1",

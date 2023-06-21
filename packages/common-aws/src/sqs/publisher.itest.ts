@@ -1,7 +1,7 @@
-import { settableTimeProvider } from '@paradox/common';
-import { traceID, withNewTrace } from '@paradox/common-server';
-import { extendJest, safeExpect } from '@paradox/common-test';
-import { Milliseconds, Seconds } from '@paradox/types';
+import { settableTimeProvider } from '@paradoxical-io/common';
+import { traceID, withNewTrace } from '@paradoxical-io/common-server';
+import { extendJest, safeExpect } from '@paradoxical-io/common-test';
+import { Milliseconds, Seconds } from '@paradoxical-io/types';
 
 import { FunctionalConsumer, FunctionalConsumerRaw, MessageProcessorResult } from './consumer';
 import { newSqsDocker } from './docker';

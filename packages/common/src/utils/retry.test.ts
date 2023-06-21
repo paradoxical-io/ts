@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { Milliseconds } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Milliseconds } from '@paradoxical-io/types';
 
 import { sleep } from '../promise';
 import { Retrier } from './retry';

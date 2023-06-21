@@ -1,7 +1,7 @@
 import { attribute, hashKey } from '@aws/dynamodb-data-mapper-annotations';
-import { defaultTimeProvider, propertiesOf, TimeProvider, toEpochSeconds } from '@paradox/common';
-import { Lock, LockApi, log } from '@paradox/common-server';
-import { EpochSeconds } from '@paradox/types';
+import { defaultTimeProvider, propertiesOf, TimeProvider, toEpochSeconds } from '@paradoxical-io/common';
+import { Lock, LockApi, log } from '@paradoxical-io/common-server';
+import { EpochSeconds } from '@paradoxical-io/types';
 import AWS, { DynamoDB } from 'aws-sdk';
 
 import { awsRethrow, hasAWSErrorCode } from '../errors';

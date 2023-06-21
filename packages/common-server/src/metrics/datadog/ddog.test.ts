@@ -1,5 +1,5 @@
-import { ApiKey, settableTimeProvider } from '@paradox/common';
-import { mock, safeExpect } from '@paradox/common-test';
+import { ApiKey, settableTimeProvider } from '@paradoxical-io/common';
+import { mock, safeExpect } from '@paradoxical-io/common-test';
 import { AxiosInstance } from 'axios';
 
 import { DDogApi } from './ddog';

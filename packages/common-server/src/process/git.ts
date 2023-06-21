@@ -1,5 +1,5 @@
-import { SafeJson } from '@paradox/common';
-import { Brand, Sha } from '@paradox/types';
+import { SafeJson } from '@paradoxical-io/common';
+import { Brand, Sha } from '@paradoxical-io/types';
 import * as child_process from 'child_process';
 import { exec } from 'child_process';
 import * as os from 'os';

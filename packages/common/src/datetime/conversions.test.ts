@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { CalendarDayType, Day, EpochMS, ISODateString, Month, Year, YearMonthDayString } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { CalendarDayType, Day, EpochMS, ISODateString, Month, Year, YearMonthDayString } from '@paradoxical-io/types';
 
 import {
   asMilli,

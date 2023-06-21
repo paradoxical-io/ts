@@ -1,4 +1,4 @@
-import { safeExpect } from '@paradox/common-test';
+import { safeExpect } from '@paradoxical-io/common-test';
 import { Column, Connection, Entity, PrimaryColumn, PrimaryGeneratedColumn, Repository } from 'typeorm';
 
 import { ConnectionFactory } from './connectionFactory';

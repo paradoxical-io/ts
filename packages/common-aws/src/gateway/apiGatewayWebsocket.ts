@@ -1,4 +1,4 @@
-import { log } from '@paradox/common-server';
+import { log } from '@paradoxical-io/common-server';
 import AWS from 'aws-sdk';
 
 import { awsRethrow } from '../errors';

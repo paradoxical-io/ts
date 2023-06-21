@@ -1,4 +1,4 @@
-import { SafeJson, truncate } from '@paradox/common';
+import { SafeJson, truncate } from '@paradoxical-io/common';
 import { AxiosError, AxiosInstance } from 'axios';
 
 import { log } from '../logger';

@@ -1,4 +1,4 @@
-import { safeExpect } from '@paradox/common-test';
+import { safeExpect } from '@paradoxical-io/common-test';
 
 import { newTestId } from './brands';
 import { MaxStack } from './maxStack';

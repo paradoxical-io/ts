@@ -1,4 +1,4 @@
-import { Amount } from '@paradox/types';
+import { Amount } from '@paradoxical-io/types';
 
 import { amountRound } from './math';
 

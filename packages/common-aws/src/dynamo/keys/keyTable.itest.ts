@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { CompoundKey, SortKey } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { newDynamoDocker } from '../docker';
 import { dynamoTableName, KeyValueCounter, KeyValueCountTableDao } from '../index';

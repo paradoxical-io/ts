@@ -1,4 +1,4 @@
-import { Brand, EpochSeconds } from '@paradox/types';
+import { Brand, EpochSeconds } from '@paradoxical-io/types';
 
 export type ApiKey = Brand<string, 'ApiKey'>;
 

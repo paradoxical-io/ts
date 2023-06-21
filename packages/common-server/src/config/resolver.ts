@@ -1,4 +1,4 @@
-import { Limiter } from '@paradox/common/dist/promise/limiter';
+import { Limiter } from '@paradoxical-io/common/dist/promise/limiter';
 
 import { ReloadableProvidedValue } from '.';
 

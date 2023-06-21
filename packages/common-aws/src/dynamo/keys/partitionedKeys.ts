@@ -1,4 +1,4 @@
-import { CompoundKey } from '@paradox/types';
+import { CompoundKey } from '@paradoxical-io/types';
 import AWS from 'aws-sdk';
 
 import { DynamoTableName, dynamoTableName } from '../util';

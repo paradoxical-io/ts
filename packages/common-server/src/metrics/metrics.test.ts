@@ -4,7 +4,7 @@ process.env.PARADOX_LOG_LEVEL = 'info';
 // ensure log decorators always run
 process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
-import { extendJest } from '@paradox/common-test';
+import { extendJest } from '@paradoxical-io/common-test';
 
 import { logMethod } from '../logger';
 import { Metrics } from './metrics';

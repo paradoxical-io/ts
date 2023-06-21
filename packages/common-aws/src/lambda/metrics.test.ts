@@ -1,7 +1,7 @@
-import { asMilli, sleep } from '@paradox/common';
-import { DDogApi, HttpDDogMetrics, Metrics } from '@paradox/common-server';
-import { mock, safeExpect } from '@paradox/common-test';
-import { Milliseconds } from '@paradox/types';
+import { asMilli, sleep } from '@paradoxical-io/common';
+import { DDogApi, HttpDDogMetrics, Metrics } from '@paradoxical-io/common-server';
+import { mock, safeExpect } from '@paradoxical-io/common-test';
+import { Milliseconds } from '@paradoxical-io/types';
 import { Context } from 'aws-lambda';
 
 import { setupLambda } from './metrics';

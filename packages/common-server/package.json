@@ -1,5 +1,5 @@
 {
-  "name": "@paradox/common-server",
+  "name": "@paradoxical-io/common-server",
   "version": "0.0.0",
   "private": true,
   "description": "Common code for paradox services",
@@ -37,8 +37,8 @@
     "portfinder": "^1.0.25"
   },
   "dependencies": {
-    "@paradox/common": "workspace:packages/common",
-    "@paradox/types": "workspace:packages/types",
+    "@paradoxical-io/common": "workspace:packages/common",
+    "@paradoxical-io/types": "workspace:packages/types",
     "@types/ssh2-sftp-client": "^7.0.1",
     "archiver": "^5.3.1",
     "axios": "^0.19.2",

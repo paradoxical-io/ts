@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { Amount } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Amount } from '@paradoxical-io/types';
 
 import { safeDbAmount } from './safeDbAmount';
 

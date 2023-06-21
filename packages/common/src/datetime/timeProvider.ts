@@ -1,5 +1,5 @@
-import { EpochMS, Milliseconds } from '@paradox/types';
-import { EpochSeconds } from '@paradox/types/dist/date';
+import { EpochMS, Milliseconds } from '@paradoxical-io/types';
+import { EpochSeconds } from '@paradoxical-io/types/dist/date';
 import { addMilliseconds } from 'date-fns';
 import addDays from 'date-fns/addDays';
 import addHours from 'date-fns/addHours';

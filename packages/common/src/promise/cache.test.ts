@@ -1,4 +1,4 @@
-import { Milliseconds } from '@paradox/types';
+import { Milliseconds } from '@paradoxical-io/types';
 
 import { settableTimeProvider } from '../datetime';
 import { expiring, lazy, setOnce } from './cache';

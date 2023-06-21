@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { Brand } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Brand } from '@paradoxical-io/types';
 
 import { newTestId } from '../utils';
 import { Maps } from './maps';

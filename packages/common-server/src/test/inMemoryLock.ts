@@ -1,5 +1,5 @@
-import { defaultTimeProvider, isExpired, TimeProvider } from '@paradox/common';
-import { EpochMS } from '@paradox/types';
+import { defaultTimeProvider, isExpired, TimeProvider } from '@paradoxical-io/common';
+import { EpochMS } from '@paradoxical-io/types';
 
 import { Lock, LockApi } from '../locking';
 

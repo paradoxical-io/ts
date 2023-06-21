@@ -1,5 +1,5 @@
-import { currentEnvironment } from '@paradox/common-server';
-import { Brand } from '@paradox/types';
+import { currentEnvironment } from '@paradoxical-io/common-server';
+import { Brand } from '@paradoxical-io/types';
 
 export type DynamoTableName = Brand<string, 'DynamoTableName'>;
 

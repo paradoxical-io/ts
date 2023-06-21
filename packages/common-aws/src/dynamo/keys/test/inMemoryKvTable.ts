@@ -1,5 +1,5 @@
-import { Streams } from '@paradox/common-server';
-import { CompoundKey, notNullOrUndefined } from '@paradox/types';
+import { Streams } from '@paradoxical-io/common-server';
+import { CompoundKey, notNullOrUndefined } from '@paradoxical-io/types';
 
 import { KeyValueList, KeyValueTable } from '../keyTable';
 import { KeyCount, KeyValueCounter } from '../keyValueCounter';

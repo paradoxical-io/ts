@@ -1,5 +1,5 @@
-import { safeStringify } from '@paradox/common';
-import { nullOrUndefined } from '@paradox/types';
+import { safeStringify } from '@paradoxical-io/common';
+import { nullOrUndefined } from '@paradoxical-io/types';
 
 import { currentEnvironment } from '../env';
 

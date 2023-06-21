@@ -1,6 +1,6 @@
-import { asMilli, newTestId, settableTimeProvider } from '@paradox/common';
-import { safeExpect } from '@paradox/common-test';
-import { CompoundKey, SortKey } from '@paradox/types';
+import { asMilli, newTestId, settableTimeProvider } from '@paradoxical-io/common';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { AttemptsError, LimitedAttempt, ResetState } from './attempter';
 import { InMemoryPartitionedKvTable } from './test/inMemoryKvTable';

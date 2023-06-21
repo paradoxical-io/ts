@@ -1,4 +1,4 @@
-import { Brand, Env, PropType } from '@paradox/types';
+import { Brand, Env, PropType } from '@paradoxical-io/types';
 
 import { currentEnvironment } from '../env';
 import { load } from './loader';

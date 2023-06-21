@@ -1,5 +1,5 @@
 import SNS = require('aws-sdk/clients/sns');
-import { log, timed } from '@paradox/common-server';
+import { log, timed } from '@paradoxical-io/common-server';
 import { AWSError } from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
 

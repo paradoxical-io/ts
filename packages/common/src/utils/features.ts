@@ -1,4 +1,4 @@
-import { AppVersion, nullOrUndefined } from '@paradox/types';
+import { AppVersion, nullOrUndefined } from '@paradoxical-io/types';
 
 export class Features {
   static syncPIIFallback(version?: AppVersion): boolean {

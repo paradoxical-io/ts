@@ -1,4 +1,4 @@
-import { Env } from '@paradox/types';
+import { Env } from '@paradoxical-io/types';
 import convict from 'convict';
 import * as fs from 'fs';
 import * as path from 'path';

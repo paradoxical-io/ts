@@ -1,6 +1,6 @@
-import { Arrays, Limiter } from '@paradox/common';
-import { log, retry as autoRetry } from '@paradox/common-server';
-import { ErrorCode, ErrorWithCode, isErrorWithCode } from '@paradox/types';
+import { Arrays, Limiter } from '@paradoxical-io/common';
+import { log, retry as autoRetry } from '@paradoxical-io/common-server';
+import { ErrorCode, ErrorWithCode, isErrorWithCode } from '@paradoxical-io/types';
 import * as SSM from 'aws-sdk/clients/ssm';
 
 import { awsRethrow, hasAWSErrorCode } from '../../errors';

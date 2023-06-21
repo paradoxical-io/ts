@@ -1,4 +1,4 @@
-import { CacheKey, Milliseconds } from '@paradox/types';
+import { CacheKey, Milliseconds } from '@paradoxical-io/types';
 
 export interface Cache {
   close(): Promise<void>;

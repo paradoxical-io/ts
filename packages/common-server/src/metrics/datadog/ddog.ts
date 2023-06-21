@@ -6,7 +6,7 @@ import {
   emptyToUndefined,
   timeout,
   TimeProvider,
-} from '@paradox/common';
+} from '@paradoxical-io/common';
 import axiosDefault, { AxiosInstance } from 'axios';
 
 import { currentEnvironment } from '../../env';

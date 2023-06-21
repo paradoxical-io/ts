@@ -1,4 +1,4 @@
-import { StaticConfigProvider, ValueProvider } from '@paradox/common-server';
+import { StaticConfigProvider, ValueProvider } from '@paradoxical-io/common-server';
 import { ConfigurationOptions } from 'aws-sdk';
 import SSM from 'aws-sdk/clients/ssm';
 

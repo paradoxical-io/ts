@@ -1,4 +1,4 @@
-import { NoFunction, notNullOrUndefined, nullOrUndefined } from '@paradox/types';
+import { NoFunction, notNullOrUndefined, nullOrUndefined } from '@paradoxical-io/types';
 import _ from 'lodash';
 
 /**

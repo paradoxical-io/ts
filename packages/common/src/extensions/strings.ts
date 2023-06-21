@@ -1,4 +1,4 @@
-import { nullOrUndefined } from '@paradox/types';
+import { nullOrUndefined } from '@paradoxical-io/types';
 import runes from 'runes';
 
 /**

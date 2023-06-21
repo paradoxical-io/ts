@@ -1,7 +1,7 @@
 import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey } from '@aws/dynamodb-data-mapper-annotations';
-import { Arrays, asBrandSafe, propertyOf, sleep } from '@paradox/common';
-import { Brand, Milliseconds, notNullOrUndefined } from '@paradox/types';
+import { Arrays, asBrandSafe, propertyOf, sleep } from '@paradoxical-io/common';
+import { Brand, Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
 import AWS from 'aws-sdk';
 
 import { awsRethrow } from '../../errors';

@@ -1,6 +1,6 @@
 import asyncRetry = require('async-retry');
-import { asMilli } from '@paradox/common';
-import { notNullOrUndefined } from '@paradox/types';
+import { asMilli } from '@paradoxical-io/common';
+import { notNullOrUndefined } from '@paradoxical-io/types';
 
 import { isAxiosError } from '../http';
 import { log } from '../logger';

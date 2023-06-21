@@ -1,6 +1,6 @@
-import { newTestId } from '@paradox/common';
-import { safeExpect } from '@paradox/common-test';
-import { DoOnceActionKey } from '@paradox/types';
+import { newTestId } from '@paradoxical-io/common';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { DoOnceActionKey } from '@paradoxical-io/types';
 
 import { InMemoryPartitionedKvTable } from '../keys';
 import { DoOnceManager } from './doOnce';

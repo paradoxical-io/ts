@@ -1,6 +1,6 @@
-import { defaultTimeProvider, sleep, TimeProvider } from '@paradox/common';
-import { currentEnvironment, isLocal, log, Metrics, signals, withNewTrace } from '@paradox/common-server';
-import { bottom, Brand, EpochMS, Milliseconds, notNullOrUndefined, Seconds } from '@paradox/types';
+import { defaultTimeProvider, sleep, TimeProvider } from '@paradoxical-io/common';
+import { currentEnvironment, isLocal, log, Metrics, signals, withNewTrace } from '@paradoxical-io/common-server';
+import { bottom, Brand, EpochMS, Milliseconds, notNullOrUndefined, Seconds } from '@paradoxical-io/types';
 import AWS, { SQS } from 'aws-sdk';
 
 import { PartitionedKeyValueTable } from '../dynamo';

@@ -5,8 +5,8 @@ import {
   Secret,
   SecureStore,
   SecureVersion,
-} from '@paradox/common-server';
-import { Brand, ErrorCode, ErrorWithCode } from '@paradox/types';
+} from '@paradoxical-io/common-server';
+import { Brand, ErrorCode, ErrorWithCode } from '@paradoxical-io/types';
 import AWS from 'aws-sdk';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import Joi from 'joi';

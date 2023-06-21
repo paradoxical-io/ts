@@ -1,4 +1,4 @@
-import { Encrypted, PrivateKey, PrivateKeyPassphrase, PublicKey } from '@paradox/types';
+import { Encrypted, PrivateKey, PrivateKeyPassphrase, PublicKey } from '@paradoxical-io/types';
 import { constants, privateDecrypt, publicEncrypt } from 'crypto';
 
 export class Encryption {

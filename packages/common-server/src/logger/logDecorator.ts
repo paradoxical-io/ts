@@ -1,8 +1,8 @@
 /* eslint-disable prefer-rest-params,@typescript-eslint/no-explicit-any */
 import 'reflect-metadata';
 
-import { chance, preciseTimeMilli, SafeJson, truncate } from '@paradox/common';
-import { notNullOrUndefined } from '@paradox/types';
+import { chance, preciseTimeMilli, SafeJson, truncate } from '@paradoxical-io/common';
+import { notNullOrUndefined } from '@paradoxical-io/types';
 
 import { currentEnvironment } from '../env';
 import { log, Logger } from './log';

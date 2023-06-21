@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { asMilli, pruneUndefined, SafeJson } from '@paradox/common';
-import { Brand, notNullOrUndefined } from '@paradox/types';
+import { asMilli, pruneUndefined, SafeJson } from '@paradoxical-io/common';
+import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
 import LRUCache from 'lru-cache';
 import { serializeError } from 'serialize-error';
 import * as winston from 'winston';

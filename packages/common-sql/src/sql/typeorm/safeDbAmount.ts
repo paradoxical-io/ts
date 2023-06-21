@@ -1,4 +1,4 @@
-import { Amount, nullOrUndefined } from '@paradox/types';
+import { Amount, nullOrUndefined } from '@paradoxical-io/types';
 
 /**
  * Util to get an Amount from a typeorm raw query where the amount's type is `any` or `unknown`.

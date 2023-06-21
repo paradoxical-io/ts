@@ -1,8 +1,8 @@
 import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
-import { Arrays, isEqual, jitter, propertyOf, sleep } from '@paradox/common';
-import { consistentMd5, log, timed } from '@paradox/common-server';
-import { CompoundKey, Milliseconds, notNullOrUndefined, nullOrUndefined, SortKey } from '@paradox/types';
+import { Arrays, isEqual, jitter, propertyOf, sleep } from '@paradoxical-io/common';
+import { consistentMd5, log, timed } from '@paradoxical-io/common-server';
+import { CompoundKey, Milliseconds, notNullOrUndefined, nullOrUndefined, SortKey } from '@paradoxical-io/types';
 import AWS from 'aws-sdk';
 import _ from 'lodash';
 

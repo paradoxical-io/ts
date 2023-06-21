@@ -1,5 +1,5 @@
-import { ProvidedConfigValue } from '@paradox/common-server';
-import { mock, safeExpect } from '@paradox/common-test';
+import { ProvidedConfigValue } from '@paradoxical-io/common-server';
+import { mock, safeExpect } from '@paradoxical-io/common-test';
 
 import { ParameterStoreApi } from '../../api';
 import { ReloadableParameterStoreConfigProvider } from './reloadableParameterStoreConfigProvider';

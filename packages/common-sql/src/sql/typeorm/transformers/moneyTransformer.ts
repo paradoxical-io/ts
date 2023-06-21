@@ -1,4 +1,4 @@
-import { roundDecimals } from '@paradox/common/dist';
+import { roundDecimals } from '@paradoxical-io/common/dist';
 import { FindOperator } from 'typeorm';
 
 import { ValueTransformer } from './transformers';

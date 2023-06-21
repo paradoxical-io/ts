@@ -1,4 +1,4 @@
-import { Brand, nullOrUndefined } from '@paradox/types';
+import { Brand, nullOrUndefined } from '@paradoxical-io/types';
 
 const integrationTestPrefix = 'integration_test_';
 function idPrefix() {

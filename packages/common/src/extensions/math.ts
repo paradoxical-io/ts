@@ -1,4 +1,4 @@
-import { nullOrUndefined, RandomSeed } from '@paradox/types';
+import { nullOrUndefined, RandomSeed } from '@paradoxical-io/types';
 import seedrandom = require('seedrandom');
 
 type RandomGenerator = () => number;

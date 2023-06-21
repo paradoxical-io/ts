@@ -1,4 +1,4 @@
-import { Amount, Brand } from '@paradox/types';
+import { Amount, Brand } from '@paradoxical-io/types';
 
 import { intersperse } from '../extensions';
 

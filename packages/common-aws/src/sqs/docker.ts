@@ -1,4 +1,4 @@
-import { Docker, newDocker } from '@paradox/common-server/dist/test/docker';
+import { Docker, newDocker } from '@paradoxical-io/common-server/dist/test/docker';
 import AWS from 'aws-sdk';
 
 import { awsRethrow } from '../errors';

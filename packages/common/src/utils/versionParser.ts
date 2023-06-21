@@ -1,4 +1,4 @@
-import { AppVersion, notNullOrUndefined, VersionChannels } from '@paradox/types';
+import { AppVersion, notNullOrUndefined, VersionChannels } from '@paradoxical-io/types';
 
 import { asBrandSafe } from './brands';
 

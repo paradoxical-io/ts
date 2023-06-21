@@ -1,5 +1,5 @@
-import { asMilli, Expiring, expiring } from '@paradox/common';
-import { CompoundKey, SortKey } from '@paradox/types';
+import { asMilli, Expiring, expiring } from '@paradoxical-io/common';
+import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { PartitionedKeyValueTable } from '../../dynamo';
 import { QueueName, QueueUrl } from '../consumer';

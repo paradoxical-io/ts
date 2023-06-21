@@ -1,4 +1,4 @@
-import { safeExpect, usingEnv } from '@paradox/common-test';
+import { safeExpect, usingEnv } from '@paradoxical-io/common-test';
 
 import { redact } from './redaction';
 

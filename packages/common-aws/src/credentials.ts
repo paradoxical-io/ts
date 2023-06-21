@@ -1,5 +1,5 @@
-import { gitRootSync, log } from '@paradox/common-server';
-import { Env } from '@paradox/types';
+import { gitRootSync, log } from '@paradoxical-io/common-server';
+import { Env } from '@paradoxical-io/types';
 import * as AWS from 'aws-sdk';
 import * as path from 'path';
 

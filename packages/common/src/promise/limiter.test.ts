@@ -1,4 +1,4 @@
-import { Milliseconds } from '@paradox/types';
+import { Milliseconds } from '@paradoxical-io/types';
 import * as _ from 'lodash';
 
 import { Limiter } from './limiter';

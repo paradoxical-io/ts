@@ -55,7 +55,7 @@ module.exports = {
         ],
         patterns: [
           // dont' let common import any other common stuff
-          '@paradox/common-*/*',
+          '@paradoxical-io/common-*/*',
           '\\.\\./dist/*',
           'src',
           '.*\\.(i)?test$',

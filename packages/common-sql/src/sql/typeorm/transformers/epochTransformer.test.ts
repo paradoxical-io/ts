@@ -1,4 +1,4 @@
-import { EpochMS } from '@paradox/types';
+import { EpochMS } from '@paradoxical-io/types';
 
 import { EpochTransformer } from './epochTransformer';
 

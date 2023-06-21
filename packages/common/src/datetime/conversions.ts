@@ -1,6 +1,15 @@
-import { CalendarDayType, Day, Milliseconds, Minutes, Month, Seconds, Year, YearMonthDayString } from '@paradox/types';
-import { EpochMS, EpochSeconds, ISODateString } from '@paradox/types/dist/date';
-import { bottom } from '@paradox/types/dist/exhaustiveness';
+import {
+  CalendarDayType,
+  Day,
+  Milliseconds,
+  Minutes,
+  Month,
+  Seconds,
+  Year,
+  YearMonthDayString,
+} from '@paradoxical-io/types';
+import { EpochMS, EpochSeconds, ISODateString } from '@paradoxical-io/types/dist/date';
+import { bottom } from '@paradoxical-io/types/dist/exhaustiveness';
 import { parseISO } from 'date-fns';
 import { zonedTimeToUtc } from 'date-fns-tz';
 

@@ -1,4 +1,4 @@
-import { CompoundKey } from '@paradox/types';
+import { CompoundKey } from '@paradoxical-io/types';
 
 export interface PartitionedKeyReaderWriter {
   getValue<T, P extends string>(key: CompoundKey<P, T>): Promise<T | undefined>;

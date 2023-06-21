@@ -1,6 +1,6 @@
-import { asMilli } from '@paradox/common';
-import { safeExpect } from '@paradox/common-test';
-import { Milliseconds } from '@paradox/types';
+import { asMilli } from '@paradoxical-io/common';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Milliseconds } from '@paradoxical-io/types';
 
 import { exponentialPoll, linearPoll } from './poll';
 import { retry } from './retryDecorator';

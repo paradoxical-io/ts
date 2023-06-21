@@ -1,6 +1,6 @@
-import { asSeconds, settableTimeProvider, timeAdder } from '@paradox/common';
-import { safeExpect } from '@paradox/common-test/dist/jest';
-import { Seconds } from '@paradox/types';
+import { asSeconds, settableTimeProvider, timeAdder } from '@paradoxical-io/common';
+import { safeExpect } from '@paradoxical-io/common-test/dist/jest';
+import { Seconds } from '@paradoxical-io/types';
 
 import { getInvisibilityDelay } from './publisher';
 

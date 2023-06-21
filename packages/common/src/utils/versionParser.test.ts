@@ -1,5 +1,5 @@
-import { safeExpect } from '@paradox/common-test';
-import { Sha, VersionChannels } from '@paradox/types';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { Sha, VersionChannels } from '@paradoxical-io/types';
 
 import { AppVersionParser } from './versionParser';
 

@@ -1,4 +1,4 @@
-import { Sha } from '@paradox/types';
+import { Sha } from '@paradoxical-io/types';
 
 import { getGitNotes } from './git';
 

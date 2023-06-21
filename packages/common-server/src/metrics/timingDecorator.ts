@@ -1,4 +1,4 @@
-import { preciseTimeMilli } from '@paradox/common';
+import { preciseTimeMilli } from '@paradoxical-io/common';
 
 import { Tags } from './contracts';
 import { Metrics } from './metrics';

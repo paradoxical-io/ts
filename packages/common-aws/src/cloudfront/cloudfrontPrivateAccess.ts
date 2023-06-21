@@ -1,5 +1,5 @@
 import { CloudfrontSignedCookiesOutput, getSignedCookies } from '@aws-sdk/cloudfront-signer';
-import { EpochSeconds } from '@paradox/types';
+import { EpochSeconds } from '@paradoxical-io/types';
 
 export type SignedCookiesResponse = CloudfrontSignedCookiesOutput;
 

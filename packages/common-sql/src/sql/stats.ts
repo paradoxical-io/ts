@@ -1,4 +1,4 @@
-import { isRemote, log, Metrics } from '@paradox/common-server';
+import { isRemote, log, Metrics } from '@paradoxical-io/common-server';
 import { Connection } from 'typeorm';
 
 export class SqlStats {

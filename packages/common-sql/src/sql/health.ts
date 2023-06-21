@@ -1,4 +1,4 @@
-import { HealthCheck } from '@paradox/common-server';
+import { HealthCheck } from '@paradoxical-io/common-server';
 import { Connection } from 'typeorm';
 
 export class DbHealth implements HealthCheck {

@@ -1,4 +1,4 @@
-import { asMilli, lazy } from '@paradox/common';
+import { asMilli, lazy } from '@paradoxical-io/common';
 import axios, { AxiosError, AxiosInstance, AxiosProxyConfig } from 'axios';
 import https from 'https';
 

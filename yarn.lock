@@ -1084,16 +1084,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@paradox/common-aws@workspace:packages/common-aws":
+"@paradoxical-io/common-aws@workspace:packages/common-aws":
   version: 0.0.0-use.local
-  resolution: "@paradox/common-aws@workspace:packages/common-aws"
+  resolution: "@paradoxical-io/common-aws@workspace:packages/common-aws"
   dependencies:
     "@aws-sdk/cloudfront-signer": ^3.229.0
     "@aws/dynamodb-data-mapper": ^0.7.3
     "@aws/dynamodb-data-mapper-annotations": ^0.7.3
-    "@paradox/common-server": "workspace:packages/common-server"
-    "@paradox/common-test": "workspace:packages/common-test"
-    "@paradox/types": "workspace:packages/types"
+    "@paradoxical-io/common-server": "workspace:packages/common-server"
+    "@paradoxical-io/common-test": "workspace:packages/common-test"
+    "@paradoxical-io/types": "workspace:packages/types"
     "@types/aws-lambda": ^8.10.119
     "@types/aws4": ^1.11.3
     "@types/lodash": ^4.14.146
@@ -1104,17 +1104,17 @@ __metadata:
     joi: ^17.9.2
     lodash: ^4.17.15
   dependenciesMeta:
-    "@paradox/common-test":
+    "@paradoxical-io/common-test":
       optional: true
   languageName: unknown
   linkType: soft
 
-"@paradox/common-server@workspace:packages/common-server":
+"@paradoxical-io/common-server@workspace:packages/common-server":
   version: 0.0.0-use.local
-  resolution: "@paradox/common-server@workspace:packages/common-server"
+  resolution: "@paradoxical-io/common-server@workspace:packages/common-server"
   dependencies:
-    "@paradox/common": "workspace:packages/common"
-    "@paradox/types": "workspace:packages/types"
+    "@paradoxical-io/common": "workspace:packages/common"
+    "@paradoxical-io/types": "workspace:packages/types"
     "@types/archiver": ^5.3.1
     "@types/async-retry": ^1.4.2
     "@types/cls-hooked": ^4.3.0
@@ -1156,11 +1156,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@paradox/common-sql@workspace:packages/common-sql":
+"@paradoxical-io/common-sql@workspace:packages/common-sql":
   version: 0.0.0-use.local
-  resolution: "@paradox/common-sql@workspace:packages/common-sql"
+  resolution: "@paradoxical-io/common-sql@workspace:packages/common-sql"
   dependencies:
-    "@paradox/common-server": "workspace:packages/common-server"
+    "@paradoxical-io/common-server": "workspace:packages/common-server"
     "@types/mysql": ^2.15.8
     mysql: ^2.17.1
     sqlite3: 5.1.6
@@ -1168,22 +1168,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@paradox/common-test@workspace:packages/common-test":
+"@paradoxical-io/common-test@workspace:packages/common-test":
   version: 0.0.0-use.local
-  resolution: "@paradox/common-test@workspace:packages/common-test"
+  resolution: "@paradoxical-io/common-test@workspace:packages/common-test"
   dependencies:
-    "@paradox/types": "workspace:packages/types"
+    "@paradoxical-io/types": "workspace:packages/types"
     "@types/lodash": 4.14.168
     lodash: ^4.17.21
   languageName: unknown
   linkType: soft
 
-"@paradox/common@workspace:packages/common":
+"@paradoxical-io/common@workspace:packages/common":
   version: 0.0.0-use.local
-  resolution: "@paradox/common@workspace:packages/common"
+  resolution: "@paradoxical-io/common@workspace:packages/common"
   dependencies:
-    "@paradox/common-test": "workspace:packages/common-test"
-    "@paradox/types": "workspace:packages/types"
+    "@paradoxical-io/common-test": "workspace:packages/common-test"
+    "@paradoxical-io/types": "workspace:packages/types"
     "@types/runes": ^0.4.1
     "@types/seedrandom": ^2.4.28
     "@types/uuid": ^3.4.5
@@ -1208,9 +1208,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@paradox/ts@workspace:.":
+"@paradoxical-io/ts@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@paradox/ts@workspace:."
+  resolution: "@paradoxical-io/ts@workspace:."
   dependencies:
     "@types/jest": ^26.0.13
     "@types/node": ^16.18.8
@@ -1239,9 +1239,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@paradox/types@workspace:packages/types":
+"@paradoxical-io/types@workspace:packages/types":
   version: 0.0.0-use.local
-  resolution: "@paradox/types@workspace:packages/types"
+  resolution: "@paradoxical-io/types@workspace:packages/types"
   languageName: unknown
   linkType: soft
 

@@ -1,4 +1,4 @@
-import { PropType } from '@paradox/types';
+import { PropType } from '@paradoxical-io/types';
 
 import { propertiesOf, propertyOf } from './properties';
 

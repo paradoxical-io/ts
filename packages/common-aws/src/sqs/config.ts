@@ -1,4 +1,4 @@
-import { ProvidedConfigValue, ValueProvider } from '@paradox/common-server';
+import { ProvidedConfigValue, ValueProvider } from '@paradoxical-io/common-server';
 
 import { Max10, QueueUrl } from './consumer';
 

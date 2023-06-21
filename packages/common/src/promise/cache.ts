@@ -1,4 +1,4 @@
-import { EpochMS, Milliseconds } from '@paradox/types';
+import { EpochMS, Milliseconds } from '@paradoxical-io/types';
 
 import { defaultTimeProvider } from '../datetime';
 

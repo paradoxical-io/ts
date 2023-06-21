@@ -1,6 +1,6 @@
 import Cloudwatch = require('aws-sdk/clients/cloudwatchlogs');
-import { log } from '@paradox/common-server';
-import { Brand, EpochMS } from '@paradox/types';
+import { log } from '@paradoxical-io/common-server';
+import { Brand, EpochMS } from '@paradoxical-io/types';
 
 import { awsRethrow } from '../errors';
 

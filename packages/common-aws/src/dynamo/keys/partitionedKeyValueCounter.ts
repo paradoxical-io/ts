@@ -1,7 +1,7 @@
 import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
-import { Arrays, propertyOf } from '@paradox/common';
-import { CompoundKey, SortKey } from '@paradox/types';
+import { Arrays, propertyOf } from '@paradoxical-io/common';
+import { CompoundKey, SortKey } from '@paradoxical-io/types';
 import AWS from 'aws-sdk';
 
 import { awsRethrow } from '../../errors';

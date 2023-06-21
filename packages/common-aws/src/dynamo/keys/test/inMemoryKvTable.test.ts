@@ -1,6 +1,6 @@
-import { newTestId } from '@paradox/common';
-import { safeExpect } from '@paradox/common-test';
-import { CompoundKey, SortKey } from '@paradox/types';
+import { newTestId } from '@paradoxical-io/common';
+import { safeExpect } from '@paradoxical-io/common-test';
+import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { InMemoryPartitionedKvTable } from './inMemoryKvTable';
 

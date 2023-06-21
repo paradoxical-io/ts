@@ -1,4 +1,4 @@
-import { Brand, SubBrand } from '@paradox/types';
+import { Brand, SubBrand } from '@paradoxical-io/types';
 
 const uuid = require('uuid');
 

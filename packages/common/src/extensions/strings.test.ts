@@ -1,4 +1,4 @@
-import { safeExpect } from '@paradox/common-test';
+import { safeExpect } from '@paradoxical-io/common-test';
 import fc from 'fast-check';
 
 import {

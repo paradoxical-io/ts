@@ -1,6 +1,6 @@
-import { defaultTimeProvider } from '@paradox/common';
-import { logMethod } from '@paradox/common-server';
-import { CompoundKey, DoOnceActionKey, DoOnceResponse, EpochMS, SortKey } from '@paradox/types';
+import { defaultTimeProvider } from '@paradoxical-io/common';
+import { logMethod } from '@paradoxical-io/common-server';
+import { CompoundKey, DoOnceActionKey, DoOnceResponse, EpochMS, SortKey } from '@paradoxical-io/types';
 
 import { PartitionedKeyValueTable } from '../keys';
 

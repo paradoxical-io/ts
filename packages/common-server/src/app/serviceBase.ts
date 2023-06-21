@@ -1,4 +1,4 @@
-import { CodeGenerator } from '@paradox/common';
+import { CodeGenerator } from '@paradoxical-io/common';
 import chalk from 'chalk';
 
 import { currentEnvironment, isLocal } from '../env';

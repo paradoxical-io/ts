@@ -1,4 +1,4 @@
-import { Brand } from '@paradox/types';
+import { Brand } from '@paradoxical-io/types';
 import { SelectQueryBuilder } from 'typeorm';
 
 import { ColumnNames, CrudBase } from '../crudBase';

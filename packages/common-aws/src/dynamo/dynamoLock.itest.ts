@@ -1,4 +1,4 @@
-import { settableTimeProvider } from '@paradox/common';
+import { settableTimeProvider } from '@paradoxical-io/common';
 
 import { newDynamoDocker } from './docker';
 import { DynamoLock, DynamoLockEntryDao } from './dynamoLock';

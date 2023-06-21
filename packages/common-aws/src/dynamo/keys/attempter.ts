@@ -1,5 +1,5 @@
-import { defaultTimeProvider } from '@paradox/common';
-import { CompoundKey, EpochMS, Milliseconds } from '@paradox/types';
+import { defaultTimeProvider } from '@paradoxical-io/common';
+import { CompoundKey, EpochMS, Milliseconds } from '@paradoxical-io/types';
 
 import { PartitionedKeyValueTable } from './partitionedKeyTable';
 

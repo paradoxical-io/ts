@@ -1,5 +1,5 @@
-import { lazy } from '@paradox/common';
-import { ConfigProvider, ProvidedConfigValue } from '@paradox/common-server';
+import { lazy } from '@paradoxical-io/common';
+import { ConfigProvider, ProvidedConfigValue } from '@paradoxical-io/common-server';
 
 import { ParameterStoreApi } from '../../api';
 

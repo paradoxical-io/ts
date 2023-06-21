@@ -1,5 +1,5 @@
-import { sleep } from '@paradox/common';
-import { Milliseconds, notNullOrUndefined } from '@paradox/types';
+import { sleep } from '@paradoxical-io/common';
+import { Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
 
 import { KeyValueList, KeyValueTable } from './keyTable';
 

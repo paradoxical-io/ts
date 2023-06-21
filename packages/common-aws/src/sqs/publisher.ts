@@ -1,6 +1,6 @@
-import { asSeconds, defaultTimeProvider } from '@paradox/common';
-import { traceID } from '@paradox/common-server';
-import { bottom, EpochMS, notNullOrUndefined, nullOrUndefined, Seconds } from '@paradox/types';
+import { asSeconds, defaultTimeProvider } from '@paradoxical-io/common';
+import { traceID } from '@paradoxical-io/common-server';
+import { bottom, EpochMS, notNullOrUndefined, nullOrUndefined, Seconds } from '@paradoxical-io/types';
 import AWS from 'aws-sdk';
 import { SendMessageBatchRequestEntry } from 'aws-sdk/clients/sqs';
 import * as _ from 'lodash';

@@ -1,4 +1,4 @@
-import { Brand } from '@paradox/types';
+import { Brand } from '@paradoxical-io/types';
 import { stringify } from 'csv';
 import stream from 'stream';
 

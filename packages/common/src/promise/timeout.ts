@@ -1,4 +1,4 @@
-import { Milliseconds } from '@paradox/types';
+import { Milliseconds } from '@paradoxical-io/types';
 
 import { randomNumber } from '../extensions';
 
