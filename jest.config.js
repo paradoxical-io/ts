@@ -2,7 +2,6 @@
 // https://jestjs.io/docs/en/configuration.html
 
 const child_process = require('child_process');
-const path = require('path');
 
 // ensure all tests run in utc timezone
 process.env.TZ = 'UTC';
@@ -23,12 +22,10 @@ function getProjectName() {
   return require(`${process.cwd()}/package.json`).name.replace('@', '').replace('/', '_');
 }
 
-const CI_DATA = process.env.CI
-  ? {
-      root: getGitRoot(),
-      name: getProjectName(),
-    }
-  : {};
+const CI_DATA = {
+  root: getGitRoot(),
+  name: getProjectName(),
+};
 
 module.exports = {
   cacheDirectory: `${CI_DATA.root ?? '.'}/.jest-cache`,
