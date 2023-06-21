@@ -62,9 +62,4 @@ module.exports = {
       diagnostics: false,
     },
   },
-
-  // common ignore patterns used by /app & /app/e2e
-  transformIgnorePatterns: [
-    `node_modules/(?!(jest-)?react-native|@react-native|react-navigation-redux-helpers|@react-navigation/.*|@react-native-community/.*|expo-modules-core|sentry-expo|native-base|expo(nent)?|@expo(nent)?|@react-native-picker/.*/.*)`,
-  ],
 };
