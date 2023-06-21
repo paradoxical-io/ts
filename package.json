@@ -27,7 +27,7 @@
     "nuclear-build": "yarn run clean-nodemodules && yarn install && npx wsrun --exclude-missing --parallel nucleaur-build && yarn run clean-compile",
     "package": "yarn workspaces foreach -v -p run package",
     "pre-commit": "pretty-quick --staged && lint-staged",
-    "test": "yarn workspaces foreach -v -p -i run test --passWithNoTests --forceExit --verbose --runInBand ",
+    "test": "yarn workspaces foreach -v -p -i run test --passWithNoTests --forceExit --verbose --runInBand",
     "test-coverage": "yarn test --coverage",
     "watch": "tsc -b -w"
   },

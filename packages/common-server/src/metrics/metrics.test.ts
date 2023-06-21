@@ -52,7 +52,7 @@ test('timing is captured with annotation and default stat name', async () => {
   expect(result).toEqual(1);
 
   expect(Metrics.instance.mockBuffer).toHaveLength(2);
-  expect(Metrics.instance.mockBuffer?.[1].startsWith('paradox.method.timed')).toBeTruthy();
+  expect(Metrics.instance.mockBuffer?.[1].startsWith('method.timed')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[1].includes('#name:Test.timeNoStat')).toBeTruthy();
 
   expect(Metrics.instance.mockBuffer).logToCli();
@@ -64,7 +64,7 @@ test('timing is captured with annotation', () => {
   expect(result).toEqual(2);
 
   expect(Metrics.instance.mockBuffer).toHaveLength(1);
-  expect(Metrics.instance.mockBuffer?.[0].startsWith('paradox.test_stat_sync')).toBeTruthy();
+  expect(Metrics.instance.mockBuffer?.[0].startsWith('test_stat_sync')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[0].includes('#test:true')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[0].includes('name:Test.bar')).toBeTruthy();
 
@@ -77,7 +77,7 @@ test('async timing is capture with annotation', async () => {
   expect(result).toEqual(2);
 
   expect(Metrics.instance.mockBuffer).toHaveLength(1);
-  expect(Metrics.instance.mockBuffer?.[0].startsWith('paradox.test_stat_async')).toBeTruthy();
+  expect(Metrics.instance.mockBuffer?.[0].startsWith('test_stat_async')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[0].includes('#test:true')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[0].includes('name:Test.foo')).toBeTruthy();
 });
@@ -89,10 +89,10 @@ test('timing with annotation plays nicely with logging annotation', async () => 
 
   // log.info creates a metric
   expect(Metrics.instance.mockBuffer).toHaveLength(2);
-  expect(Metrics.instance.mockBuffer?.[1].startsWith('paradox.test_stat_async_logging')).toBeTruthy();
+  expect(Metrics.instance.mockBuffer?.[1].startsWith('test_stat_async_logging')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[1].includes('#test:true')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[1].includes('name:Test.logAndTime')).toBeTruthy();
-  expect(Metrics.instance.mockBuffer?.[0]).toEqual('paradox.log.level:1|c|#level:info');
+  expect(Metrics.instance.mockBuffer?.[0]).toEqual('log.level:1|c|#level:info');
 });
 
 test('timing with annotation plays nicely with logging annotation reverse', async () => {
@@ -102,8 +102,8 @@ test('timing with annotation plays nicely with logging annotation reverse', asyn
 
   // log.info creates a metric
   expect(Metrics.instance.mockBuffer).toHaveLength(2);
-  expect(Metrics.instance.mockBuffer?.[1].startsWith('paradox.test_stat_async_logging')).toBeTruthy();
+  expect(Metrics.instance.mockBuffer?.[1].startsWith('test_stat_async_logging')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[1].includes('#test:true')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[1].includes('name:Test.timeAndLog')).toBeTruthy();
-  expect(Metrics.instance.mockBuffer?.[0]).toEqual('paradox.log.level:1|c|#level:info');
+  expect(Metrics.instance.mockBuffer?.[0]).toEqual('log.level:1|c|#level:info');
 });
