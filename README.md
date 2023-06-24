@@ -123,6 +123,8 @@ TypeORM is a great piece of technology and we've extended it to add some sane de
 
 We have exposed tooling to be able to dump the sqlite db to disk for exploring if tests are failing, as well as a myriad of ways to configure your production system (to mysql).
 
+To see how to easily create a connection to in memory databases (sqlite) or mysql, look at the [connection factory](packages/common-sql/src/sql/connectionFactory.ts).  Instead of mocking db tests (which provide near zero testing value) use an actual db! 
+
 # Logging
 
 Other than the trace logging we've mentioned above, our logger supports context sensitive log wrapping. For example:
