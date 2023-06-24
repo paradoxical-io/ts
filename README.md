@@ -61,7 +61,7 @@ log.with({ env: currentEnvironment() }).info('Booting up!');
 Will print out
 
 ````
-Booting up! env=dev```
+Booting up! env=dev
 ````
 
 Or if you are using the JSON formatter it will use structured key value's to include your with statements.
