@@ -26,9 +26,54 @@ A sample of some things we support
 
 Diving deeper into a few subjects:
 
+# Applications
+
+Our philosophy is that applications should 
+
+- Respect system level signals for shutdown/interrupts
+- Be easy to start up and log that they are starting up
+- Be safe to run in different environments without accidentally running things in production
+- Log metrics on crash, startup, and other lifecycle events
+
+To that end we have a base class called [`ServiceBase`](packages/common-server/src/app/serviceBase.ts) which handles all of this. 
+
+`prod` vs `dev` vs `local` can be configured via the env key of `PARADOX_ENV` or via `setEnvironment('prod')`.
+
+If we are running in prod  and the service is on a `darwin` architecture, then base class will require the user to input a random code to ensure that they aren't accidentally running prod local.  
+
+For example, an application can be defined as 
+
+```
+class Example extends ServiceBase {
+  name = 'example-service';
+
+  start(): Promise<void> {
+    // your code here
+  }
+}
+
+await app(new Example())
+```
+
 # Tracing
 
 Tracing across async contexts is critical to be able to know who did what action when. All the AWS and core libraries here automatically pull and read from [node CLS](https://www.npmjs.com/package/node-cls) in order to pass a context and trace. A traceID is one that spans the entire request. Imagine a user hits an API endpoint. At this point we can assign a trace and for the entire async flow pass that trace along. The logging utility provided here (which wraps `winston`) automatically adds the trace into all log statements. This way you can do easy filtering of JUST the actions this user did, even in a high volume logging situation of many other users.
+
+You may wonder how you generate a trace. To create a new one you can easily wrap any async entrypoint with 
+
+```
+await withNewTrace(async () => {
+  // ...
+})
+```
+
+If you have a trace already provided (for example via a library like [hapi](https://hapi.dev/tutorials/logging/?lang=en_US)) you can provide a trace ID with
+
+```
+withNewTrace(..., traceId)
+```
+
+Once the async context is done the trace is removed.
 
 ## AWS
 
@@ -41,6 +86,34 @@ We have also wrapped up the consumers so that they can be easily paralleizable, 
 Our publishers wrap your data in a standard envelope which allows for non-modification of the existing over the wire data but allows us to pass extra metadata that the consumers can use.
 
 These publishers/consumers have all been used heavily in production and are well battle tested.
+
+The over the wire format of SQS data is 
+
+```
+export interface SQSEvent<T> {
+  timestamp: EpochMS;
+  trace?: string;
+  data: T;
+  republishContext?: {
+    /**
+     * The total times this message has be been republished
+     */
+    publishCount?: number;
+    /**
+     * Stop re-publishing the message after this expiration time
+     */
+    maxPublishExpiration?: EpochMS;
+
+    /**
+     * Always re-publish this message until this epoch occurs. Used to kick
+     * messages past the max visibility timeout in SQS
+     */
+    processAfter?: EpochMS;
+  };
+}
+```
+
+Events contain when they were published, if they should be processed after a period of time (if they aren't ready yet they are booted back to the queue), if they were re-published, their originating trace, and the serialized queue data. 
 
 # SQL
 
@@ -55,14 +128,19 @@ We have exposed tooling to be able to dump the sqlite db to disk for exploring i
 Other than the trace logging we've mentioned above, our logger supports context sensitive log wrapping. For example:
 
 ```
-log.with({ env: currentEnvironment() }).info('Booting up!');
+const envBasedLogger = log.with({ env: currentEnvironment() })
+
+envBasedLogger.info('Booting up!');
+envBasedLogger.info('Welcome');
 ```
 
 Will print out
 
 ````
 Booting up! env=dev
+Welcome env=dev
 ````
+
 
 Or if you are using the JSON formatter it will use structured key value's to include your with statements.
 
@@ -72,10 +150,10 @@ On top of that, we strongly believe that logs should be informative but not inva
 
 ```
 @logMethod()
-  async yourMethod(args: YourArg) ...
+async yourMethod(args: YourArg) ...
 ```
 
-The logmethod annotation will log twice (3 times if you request to log the result).
+The `logMethod` annotation will log twice (3 times if you request to log the result).
 
 1. That the method started, what class it's part of, and what is the method along with its json serialized arguments.
    - Arguments can be redacted if they are sensitive by adding the `@sensitive` tag to them. You can also even redact nested arguments within objects if you provide the object path. See unit tests for examples.
