@@ -1,6 +1,9 @@
 import { load } from './loader';
+import { ConfigBlock } from "./contracts";
+import { ProvidedConfigValue } from "./providers/providedConfigValue";
+import { safeExpect } from '@paradoxical-io/common-test';
 
-function schemaShape() {
+function schemaShape(): ConfigBlock<ProvidedConfig> {
   return {
     host: {
       auth: {
@@ -12,25 +15,55 @@ function schemaShape() {
         },
       },
     },
+    dynamic: {
+      providerType: {
+        doc: 'How to load the value',
+        default: 'ParameterStore',
+        format: ['ParameterStore', 'Static'],
+      },
+      value: {
+        doc: 'The ssm path',
+        format: String,
+        default: '/path/to/ssm'
+      }
+    }
   };
 }
 
+interface ProvidedConfig {
+  host: {
+    auth: {
+      allowAssume: boolean;
+    };
+  };
+  dynamic: ProvidedConfigValue
+}
+
+/**
+ * The actual resolved config
+ */
+// @ts-ignore
 interface Config {
   host: {
     auth: {
       allowAssume: boolean;
     };
   };
+  dynamic: string
 }
 
 test('loads from an object', async () => {
-  const config = load<Config>({}, 'local', schemaShape);
-  expect(config).not.toBeNull();
-  expect(config.host.auth.allowAssume).toEqual(true);
+  const config = load<ProvidedConfig>({}, 'local', schemaShape);
+
+  safeExpect(config).not.toBeNull();
+  safeExpect(config.host.auth.allowAssume).toEqual(true);
+  safeExpect(config.dynamic.providerType).toEqual('ParameterStore');
+  safeExpect(config.dynamic.value).toEqual('/path/to/ssm');
 });
 
 test('loads from an with defaults', async () => {
-  const config = load<Config>({ host: { auth: { allowAssume: false } } }, 'local', schemaShape);
-  expect(config).not.toBeNull();
-  expect(config.host.auth.allowAssume).toEqual(false);
+  const config = load<ProvidedConfig>({ host: { auth: { allowAssume: false } } }, 'local', schemaShape);
+
+  safeExpect(config).not.toBeNull();
+  safeExpect(config.host.auth.allowAssume).toEqual(false);
 });

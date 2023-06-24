@@ -12,6 +12,7 @@ A sample of some things we support
 - [AES 256 crypto for KEK and DEK](packages/common-server/src/encryption)
 - [consistent hashing](packages/common-server/src/hash) to pin user ids to feature flags in memory
 - [SFTP read/write](packages/common-server/src/sftp)
+- [Typesafe convict configuration](packages/common-server/src/config/contracts.ts)
 - Production ready [tracing](packages/common-server/src/trace), [logging](packages/common-server/src/logger), [metrics](packages/common-server/src/metrics)
 - Wrapped and sane AWS tooling for
   - [dynamo](packages/common-aws/src/dynamo) - read, write, stream, dynamo based locks
@@ -54,6 +55,33 @@ class Example extends ServiceBase {
 
 await app(new Example())
 ```
+
+# Configuration
+
+Configuration is a big part of application infrastructure.  We have provided an opinionated wrapper on [convict](https://github.com/mozilla/node-convict) which allows you to create typed [convict shapes](packages/common-server/src/config/loader.test.ts).  
+
+While convict provides static configuration, what happens if we want to specify configuration from external areas like AWS param store? We can also do that too! 
+
+For example, we can create a configuration that uses the concept of a `Provided Value` which we can then _resolve_ the values from.
+
+Imagine we load `ProvidedConfig` from [our example](packages/common-server/src/config/loader.test.ts).  How do we get the actual value of `/path/to/ssm`. We can resolve each value in parallel:
+
+```
+const resolveConfig = async (resolver: ValueProvider, config: ProvidedConfig): Promise<Config> =>  {
+  return autoResolve({
+    host: config.host,
+    dynamic: async () => resolver.getValue(config.dynamic)
+  })
+}
+```
+
+`autoResolve` will recursively go through the object and automagically resolve any lambda based promises in parallel. This way you can have throughput limitation on SSM/etc and dynamically resolve your configuration with minimal friction.
+
+See an implementation of the SSM resolver [here](packages/common-aws/src/parameter-store/config/providers/parameterStoreConfigProvider.ts).  You can plug in other resolvers as you want as well! 
+
+For local testing override via environment variables the provider to be `Static`.
+
+
 
 # Tracing
 
