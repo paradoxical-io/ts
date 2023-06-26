@@ -23,6 +23,12 @@ A sample of some things we support
 - Simple and useable [branded types](packages/types/src/brands.ts) as well as type utilities such as [exhaustiveness checking](packages/types/src/exhaustiveness.ts) and [extraction functions](packages/types/src/util.ts)
 - Strongly typed [Jest expectations](packages/common-test/src/jest/index.ts) for compile time support on `expect`
   - automatic type-safe of mocking of objects via `mock<T>()`
+- Logging and tracing tracing [interceptors](packages/common-server/src/http/interceptors.ts) for axios as well as [proxy configurations](packages/common-server/src/http/axios.ts)
+- [Retry](packages/common-server/src/retry/poll.ts) extensions on top of [async retry](https://www.npmjs.com/package/async-retry)
+- [Docker](packages/common-server/src/test/docker/index.ts) test setup tooling to make it easy to run (and stop) containers for integration tests
+- [Cycle management](packages/common/src/di/deferred.ts) for safely instantiating circular dependencies when doing manual constructor based DI
+- [In memory pub/sub](packages/common/src/pubsub/index.ts) to decouple abstractions 
+- [Promise extensions](packages/common/src/promise) to help with timeouts, rate limiting, etc
 - ... and more!
 
 Diving deeper into a few subjects:
