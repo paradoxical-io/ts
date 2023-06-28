@@ -1,5 +1,5 @@
 import { Brand, nullOrUndefined } from '@paradoxical-io/types';
-import seedrandom = require('seedrandom');
+import seedrandom from 'seedrandom';
 
 export type RandomSeed = Brand<string, 'RandomSeed'>;
 
