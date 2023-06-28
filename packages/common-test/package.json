@@ -1,9 +1,10 @@
 {
   "name": "@paradoxical-io/common-test",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Common test-code for jest",
   "files": [
-    "dist/"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

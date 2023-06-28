@@ -1,9 +1,10 @@
 {
   "name": "@paradoxical-io/types",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Paradox shared types",
   "files": [
-    "dist/"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
