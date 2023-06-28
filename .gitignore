@@ -24,6 +24,7 @@ yarn-offline
 **/.terraform/
 
 *.d.ts.map
+*.js.map
 
 **/tsconfig.tsbuildinfo
 

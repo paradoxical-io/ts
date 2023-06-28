@@ -1195,16 +1195,11 @@ __metadata:
     date-fns-tz: ^1.0.9
     dockerode: ^3.0.2
     emoji-regex: ^10.1.0
-    lru-cache: ^6.0.0
     portfinder: ^1.0.25
     runes: ^0.4.3
-    seedrandom: ^3.0.5
     serialize-error: ^6.0.0
-    tree-kill: ^1.2.1
     uuid: ^8.3.2
     validate.js: ^0.13.1
-    winston: ^3.2.1
-    wtfnode: ^0.8.1
   languageName: unknown
   linkType: soft
 
@@ -8916,13 +8911,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seedrandom@npm:^3.0.5":
-  version: 3.0.5
-  resolution: "seedrandom@npm:3.0.5"
-  checksum: 728b56bc3bc1b9ddeabd381e449b51cb31bdc0aa86e27fcd0190cea8c44613d5bcb2f6bb63ed79f78180cbe791c20b8ec31a9627f7b7fc7f476fd2bdb7e2da9f
-  languageName: node
-  linkType: hard
-
 "semver@npm:2 || 3 || 4 || 5, semver@npm:^5.4.1, semver@npm:^5.5.0":
   version: 5.7.1
   resolution: "semver@npm:5.7.1"
@@ -10766,15 +10754,6 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: c3c100a181b731f40b7f2fddf004aa023f79d64f489706a28bc23ff88e87f6a64b3c6651fbec3a84a53960b75159574d7a7385709847a62ddb7ad6af76f49138
-  languageName: node
-  linkType: hard
-
-"wtfnode@npm:^0.8.1":
-  version: 0.8.4
-  resolution: "wtfnode@npm:0.8.4"
-  bin:
-    wtfnode: proxy.js
-  checksum: 0d6413ed27d84d4cd54c86b7a843e5611bce901f8c137fb8c8bc9b2412e14fdabad5249104116c54f4ba0435d1152b84e78a5404c660b90f17a8e6cf9578d8e8
   languageName: node
   linkType: hard
 
