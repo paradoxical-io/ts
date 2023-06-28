@@ -1,9 +1,10 @@
 {
   "name": "@paradoxical-io/common-sql",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "files": [
     "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist/**/*.d.ts",
+    "!*.(i)?test.*"
   ],
   "description": "Common sql code for paradox services",
   "main": "./dist/index.js",

@@ -1,12 +1,13 @@
 {
   "name": "@paradoxical-io/common-aws",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Common aws for paradox services",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist/**/*.d.ts",
+    "!*.(i)?test.*"
   ],
   "scripts": {
     "clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",

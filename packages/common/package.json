@@ -1,10 +1,11 @@
 {
   "name": "@paradoxical-io/common",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Common code for all paradox projects",
   "files": [
     "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist/**/*.d.ts",
+    "!*.(i)?test.*"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
