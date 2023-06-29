@@ -6,6 +6,9 @@
 - Built in [ping endpoint for load balancing](src/hapi/plugins/ping.ts)
 - Built in [metrics plugin](src/hapi/plugins/metrics.ts)
 - Built in [logging plugin](src/hapi/plugins/logging.ts)
+  - Automatic redaction of PII sensitive data based on property name heuristics of `ssn`, `password`, etc
+- Standard [error handling plugin](src/hapi/plugins/errors/errorHandlerPlugin.ts)
+  - Sane responses detected on invalid connections to sql drivers to report back maintenance downtime
 - [HMAC authorization](src/hapi/auth/hmac.ts) support
 - [Bearer authorization](src/hapi/auth/bearer.ts) support
 - [IP Filtering](src/hapi/auth/ipFiltering.ts) plugin support for per route allow lists
