@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common-server",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "Common code for paradox services",
   "main": "./dist/index.js",
