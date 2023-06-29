@@ -1,12 +1,12 @@
 {
-  "name": "@paradoxical-io/common-sql",
+  "name": "@paradoxical-io/common-hapi",
   "version": "1.0.5",
+  "description": "Common hapi code for paradoxical services",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "!*.(i)?test.*"
   ],
-  "description": "Common sql code for paradox services",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -16,16 +16,22 @@
     "lint": "yarn common:lint",
     "lint:fix": "yarn common:lint:fix"
   },
-  "author": "Anton Kropp",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "@types/mysql": "^2.15.8",
-    "sqlite3": "5.1.6"
+    "@types/hapi__hapi": "^20.0.9",
+    "@types/hapi__inert": "^5.2.3"
   },
   "dependencies": {
+    "@hapi/bell": "^12.3.0",
+    "@hapi/cookie": "^11.0.2",
+    "@hapi/hapi": "^20.2.2",
+    "@hapi/inert": "^6.0.4",
     "@paradoxical-io/common-server": "workspace:packages/common-server",
-    "mysql": "^2.17.1",
-    "typeorm": "^0.2.45"
+    "@paradoxical-io/types": "workspace:packages/types",
+    "humanize-duration": "^3.21.0",
+    "joi": "^17.4.2",
+    "node-cache": "^5.1.2"
   },
   "lint-staged": {
     "*.ts": [

@@ -44,6 +44,22 @@ export function setCurrentUserId<T extends string>(userId: T) {
 
 export const getOptionalContext = (): OptionalContext | undefined => ns.get('optionalContext');
 
+export function addToOptionalContext(key: string, value: string): void {
+  const context = getOptionalContext() ?? {};
+
+  try {
+    context[key] = value;
+
+    ns.set('optionalContext', context);
+  } catch (e) {
+    if (process.env.JEST_TEST) {
+      // allow this to not be set in tests that dont have a cls created
+    } else {
+      throw e;
+    }
+  }
+}
+
 /**
  * Creates a trace context for promises. We can set thread local values on anything in this context
  * @param fun

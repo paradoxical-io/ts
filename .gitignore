@@ -57,7 +57,7 @@ temp/
 
 **/.jest-cache
 
-copper.log
+paradox.log
 
 # vscode workspace settings
 .vscode/settings.json
