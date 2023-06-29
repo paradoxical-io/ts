@@ -246,11 +246,11 @@ export class Server {
     }
 
     if (typeof handler === 'function') {
-      return (request: Request, h: ResponseToolkit, err?: Error): ReturnValue => 
+      return (request: Request, h: ResponseToolkit, err?: Error): ReturnValue =>
         // wrap the handler in a context local storage so that all logging
         // within the handler block (but not plugins) are unified and contain "thread-local" style
         // metadata
-         withNewTrace(() => {
+        withNewTrace(() => {
           // because we don't really know which methods are authorized or not we should test if the request is authorized
           // and if so let the caller set the cls fields based on their authentication models
           if (request.auth.isAuthenticated) {
@@ -265,8 +265,7 @@ export class Server {
 
           // @ts-ignore
           return handler(request, h, err);
-        }, request.info.id)
-      ;
+        }, request.info.id);
     }
 
     return handler;
