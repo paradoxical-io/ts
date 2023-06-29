@@ -6,6 +6,7 @@
     { "path": "packages/types" },
     { "path": "packages/common" },
     { "path": "packages/common-server" },
+    { "path": "packages/common-hapi" },
     { "path": "packages/common-sql" },
     { "path": "packages/common-aws" },
     { "path": "packages/common-test" }

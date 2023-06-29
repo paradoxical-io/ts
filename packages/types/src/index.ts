@@ -14,6 +14,7 @@ export * from './exhaustiveness';
 export * from './json';
 export * from './keys';
 export * from './nullish';
+export * from './pii';
 export * from './types';
 export * from './util';
 
