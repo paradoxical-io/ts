@@ -113,6 +113,7 @@ describe('api tests', () => {
       path: '/api/ping',
       handler: () => 'OK',
       options: {
+        auth: AssumeAuth.scheme,
         validate: {
           payload: {
             value: Joi.string().required(),
@@ -155,6 +156,7 @@ describe('api tests', () => {
       path: '/api/ping',
       handler: () => 'OK',
       options: {
+        auth: AssumeAuth.scheme,
         validate: {
           payload: {
             value: Joi.string().required(),

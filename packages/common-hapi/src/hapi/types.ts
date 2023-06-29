@@ -10,10 +10,6 @@ import {
 import { Envelope } from '@paradoxical-io/types';
 import Joi from 'joi';
 
-import { AuthStrategy } from './auth/authStrategies';
-import { BearerStrategy } from './auth/bearer';
-import { HmacStrategy } from './auth/hmac';
-import { IpFilteringStrategy } from './auth/ipFilteringStrategy';
 import { InMemoryRateLimitingOptions, InMemoryRateLimitingPlugin } from './plugins/inMemoryRateLimiting';
 import { Validation } from './validation';
 
@@ -42,7 +38,7 @@ export type EnvelopeResponse<T> =
    */
   | Promise<ResponseObject>;
 
-type ValidAuth = AuthStrategy | false | BearerStrategy | HmacStrategy | IpFilteringStrategy;
+type ValidAuth = string | false;
 
 type AuthorizedRoute = Pick<ServerRoute, 'options'> & {
   options: Pick<RouteOptions, 'auth'> &
@@ -73,9 +69,10 @@ export interface HAPIWithEnvelope<Req extends object, Resp, TAuth extends Reques
  * of the request object separate from the path and route. Doesn't force any kind of validation but exposes the options
  * to support generic routing configuration. This is a looser contract than ValidatedRoute<Req, Resp>
  */
-export type Route<Req extends object, Resp, TAuth extends RequestAuth = RequestAuth> = Pick<
-  HAPIWithEnvelope<Req, Resp, TAuth>,
-  'handler' | 'options'
+export type Route<Req extends object, Resp, TAuth extends RequestAuth = RequestAuth> = HAPIWithEnvelope<
+  Req,
+  Resp,
+  TAuth
 > &
   AuthorizedRoute;
 
