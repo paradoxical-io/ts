@@ -16,3 +16,66 @@
 - [Server wrapper](src/hapi/server/server.ts) that
   - Allows CLS based traces for per-request tracing
 - Standardizes [response in an envelope shape](src/hapi/types.ts), provides built in localization support, standard error codes, and more
+
+## Get started
+
+Create a service entrypoint that is auto wired to register routes and responds to shutdown sequences
+
+```
+export class App extends ServiceBase {
+  name = 'backend-service';
+
+  async start(): Promise<void> {
+    const route = new Routes();
+
+    const server = new Server({
+      routables: [route],
+    });
+
+    await server.start();
+
+    signals.onShutdown(async () => {
+      await server.stop();
+    });
+  }
+}
+```
+
+Now create your registration routes
+
+```
+export class Routes implements HAPIRoutes<HAPIRoute<FirebaseRequestAuth>> {
+  readonly routeName = 'backend-routes';
+
+  async close(): Promise<void> {}
+
+  getRoutes(): HAPIRoute<FirebaseRequestAuth>[] {
+    return [
+      {
+        method: 'POST',
+        handler: (req: TypedRequest<{ test: string }>): EnvelopeResponse<{ response: string }> => envelope({
+            response: req.payload.test
+          }),
+        options: {
+          validate: {
+            payload: {
+              test: Joi.string().required(),
+            },
+          },
+        },
+        path: `/api/v1/check`,
+      },
+    ];
+  }
+
+  healthCheck(): HealthCheck | undefined {
+    return undefined;
+  }
+
+  async plugins(): Promise<SimplePlugin[]> {
+    return [];
+  }
+}
+```
+
+Now you can start the service up and call `POST localhost:3001/api/v1/check` and send a body of `{"test": "foo"}` and get it back printed to you.  
