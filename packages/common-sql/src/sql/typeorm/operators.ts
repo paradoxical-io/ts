@@ -21,7 +21,7 @@ import { XPath } from './xpathBuilder';
 // TypeORM query operators polyfills from https://github.com/typeorm/typeorm/issues/2286#issuecomment-499764915
 // Keep in mind, the format string in that linked comment is wrong, but we do need to format the timestamp for sqlite
 enum EDateType {
-  Datetime = 'yyyy-MM-dd HH:mm:ss',
+  Datetime = 'yyyy-MM-dd HH:mm:ss.SSSS',
 }
 
 export class CustomOperators {
