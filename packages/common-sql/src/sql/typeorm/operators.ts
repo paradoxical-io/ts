@@ -1,5 +1,3 @@
-// tslint:disable:variable-name
-import { format } from 'date-fns';
 import {
   ConnectionOptions,
   FindOperator,
@@ -14,21 +12,23 @@ import {
 import { RelationCountLoader } from 'typeorm/query-builder/relation-count/RelationCountLoader';
 import { RelationIdLoader } from 'typeorm/query-builder/relation-id/RelationIdLoader';
 import { RawSqlResultsToEntityTransformer } from 'typeorm/query-builder/transformer/RawSqlResultsToEntityTransformer';
+import { DateUtils } from 'typeorm/util/DateUtils';
 
 import { ColumnName } from './queryBuilderHelpers';
 import { XPath } from './xpathBuilder';
 
-// TypeORM query operators polyfills from https://github.com/typeorm/typeorm/issues/2286#issuecomment-499764915
-// Keep in mind, the format string in that linked comment is wrong, but we do need to format the timestamp for sqlite
-enum EDateType {
-  Datetime = 'yyyy-MM-dd HH:mm:ss',
-}
-
 export class CustomOperators {
   constructor(private driver: ConnectionOptions) {}
 
+  /**
+   * sqlite does not have a date field, internally they are stored as a string.
+   * This DateUtils function is exactly how TypeORM transforms the date before writing to the sqlite db.
+   * https://github.com/typeorm/typeorm/issues/2286#issuecomment-813106077
+   * @param date
+   * @private
+   */
   private sqliteFormat(date: Date): string {
-    return format(date, EDateType.Datetime);
+    return DateUtils.mixedDateToUtcDatetimeString(date);
   }
 
   /**
