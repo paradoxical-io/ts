@@ -20,6 +20,13 @@ import { XPath } from './xpathBuilder';
 export class CustomOperators {
   constructor(private driver: ConnectionOptions) {}
 
+  /**
+   * sqlite does not have a date field, internally they are stored as a string.
+   * This DateUtils function is exactly how TypeORM transforms the date before writing to the sqlite db.
+   * https://github.com/typeorm/typeorm/issues/2286#issuecomment-813106077
+   * @param date
+   * @private
+   */
   private sqliteFormat(date: Date): string {
     return DateUtils.mixedDateToUtcDatetimeString(date);
   }
