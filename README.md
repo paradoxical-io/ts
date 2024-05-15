@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/@paradoxical-io%2Ftypes.svg)](https://badge.fury.io/js/@paradoxical-io%2Ftypes) ![build status](https://github.com/paradoxical-io/ts/actions/workflows/build.yml/badge.svg)
 
-A collection of useful typescript first common libraries, tooling, and shared utilities.
+A collection of useful typescript first common libraries, tooling, and shared utilities. Many of these examples are used in the book [Building A Startup -  A Primer For The Individual Contriubutor](https://www.amazon.com/Building-Startup-Primer-Individual-Contributor/dp/B0D1QX58ZR) and have been battle tested in high volume production services.
 
 The main goal is to create simple and safe production level code that is easy to test, has distributed tracing built in, branded types first, and dependency injected for easy extension.
 
