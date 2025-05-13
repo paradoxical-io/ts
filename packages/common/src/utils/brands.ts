@@ -1,4 +1,4 @@
-import { Brand, nullOrUndefined } from '@paradoxical-io/types';
+import { asBrandSafe as typedBrandSafe, Brand } from '@paradoxical-io/types';
 
 const integrationTestPrefix = 'integration_test_';
 function idPrefix() {
@@ -41,27 +41,9 @@ export function isIntegrationTestId<T extends string>(id?: T): boolean {
 }
 
 /**
- * Often times we are mapping data from external sources and then casting to a brand type
- * such that from there on out we have the brand information. However, casting an undefined as a Brand
- * will automatically  make undefined ... a brand. That's not usually w hat you want, you want Brand | undefined
- *
- * This method will safely cast to the brand if the value is defined otherwise return undefined.
- *
- * For example:
- *
- * const name: FirstName | undefined = asBrandSafe(undefined)
- *
- * VS
- *
- * // this is compilable but _not what we intended_
- * const name: Firstname = undefined as Firstname
- *
+ * @deprecated Use {@link typedBrandSafe} in the /types package instead
  * @param value
  */
 export function asBrandSafe<B extends Brand<K, unknown>, K>(value: K | undefined | null): B | undefined {
-  if (nullOrUndefined(value)) {
-    return undefined;
-  }
-
-  return value as unknown as B;
+  return typedBrandSafe<B, K>(value)
 }

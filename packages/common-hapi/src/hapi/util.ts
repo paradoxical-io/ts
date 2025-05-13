@@ -1,7 +1,6 @@
 import Boom from '@hapi/boom';
 import { Request, ResponseObject, Server, ServerInjectOptions, ServerInjectResponse, Util } from '@hapi/hapi';
-import { asBrandSafe } from '@paradoxical-io/common';
-import { Envelope } from '@paradoxical-io/types';
+import { asBrandSafe, Envelope } from '@paradoxical-io/types';
 
 /**
  * Wrap data in the response envelope. This should be used only for
