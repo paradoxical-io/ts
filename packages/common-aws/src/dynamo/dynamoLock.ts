@@ -6,7 +6,7 @@ import AWS, { DynamoDB } from 'aws-sdk';
 
 import { awsRethrow, hasAWSErrorCode } from '../errors';
 import { DynamoDao } from './mapper';
-import { assertTableNameValid, DynamoTableName, dynamoTableName } from './util';
+import { DynamoTableName, dynamoTableName } from './util';
 
 export class DynamoLock implements LockApi {
   private dynamo: AWS.DynamoDB;
@@ -24,8 +24,6 @@ export class DynamoLock implements LockApi {
     tableName?: DynamoTableName;
     timeProvider?: TimeProvider;
   } = {}) {
-    assertTableNameValid(tableName);
-
     this.dynamo = dynamo;
 
     this.tableName = tableName;
