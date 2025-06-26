@@ -46,6 +46,8 @@ module.exports = {
   // The test environment that will be used for testing
   testEnvironment: 'node',
 
+  snapshotResolver: process.env.CI ? `${CI_DATA.root}/packages/common-test/dist/jest/snapshotResolver.js` : undefined,
+
   transform: {
     "^.+\\.tsx?$": ['ts-jest', {
       // https://github.com/kulshekhar/ts-jest/issues/259#issuecomment-504088010
