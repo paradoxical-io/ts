@@ -49,14 +49,4 @@ module.exports = {
   // find snapshots co-located to ts files vs the dist files
   // https://brunoscheufler.com/blog/2020-03-08-configuring-jest-snapshot-resolvers
   snapshotResolver: process.env.CI ? `${CI_DATA.root}/packages/common-test/dist/jest/snapshotResolver.js` : undefined,
-
-  // Whether to use watchman for file crawling
-  // watchman: true,
-  globals: {
-    'ts-jest': {
-      // https://github.com/kulshekhar/ts-jest/issues/259#issuecomment-504088010
-      maxWorkers: 1,
-      diagnostics: false,
-    },
-  },
 };
