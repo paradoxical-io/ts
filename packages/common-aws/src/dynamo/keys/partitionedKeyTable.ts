@@ -1,14 +1,22 @@
-import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
+import {
+  BatchWriteItemCommand,
+  ConditionalCheckFailedException,
+  DeleteItemCommand,
+  DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
+  QueryCommand,
+  ResourceNotFoundException,
+} from '@aws-sdk/client-dynamodb';
 import { Arrays, isEqual, jitter, propertyOf, sleep } from '@paradoxical-io/common';
 import { consistentMd5, log, timed } from '@paradoxical-io/common-server';
 import { CompoundKey, Milliseconds, notNullOrUndefined, nullOrUndefined, SortKey } from '@paradoxical-io/types';
-import AWS from 'aws-sdk';
 import _ from 'lodash';
 
-import { awsRethrow, hasAWSErrorCode } from '../../errors';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
+import { DynamoKey } from './keyTable';
 
 export class PartitionedKeyValueTableDao<T extends string> implements DynamoDao {
   @hashKey()
@@ -35,18 +43,20 @@ export interface PartitionKeyMappings {
 /**
  * A key value table where the _sort_ key is namespaced.
  *
- * Allows to query all the values based on the partition key.
+ * The reason for this is to allow to query all the values based on the partition key. Imagine
+ * wanting to answer "give me all the keys for userId X" and get the fact that it has some bank keys
+ * and some user keys, etc.
  */
 export class PartitionedKeyValueTable {
-  readonly dynamo: AWS.DynamoDB;
+  readonly dynamo: DynamoDBClient;
 
   readonly tableName: string;
 
   constructor({
-    dynamo = new AWS.DynamoDB(),
-    tableName = dynamoTableName('partitioned_keys'),
-  }: {
-    dynamo?: AWS.DynamoDB;
+                dynamo = new DynamoDBClient(),
+                tableName = dynamoTableName('partitioned_keys'),
+              }: {
+    dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
   } = {}) {
     assertTableNameValid(tableName);
@@ -144,7 +154,7 @@ export class PartitionedKeyValueTable {
     try {
       return (await this.getRaw<T, P>(key))?.data;
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return undefined;
       }
 
@@ -160,23 +170,23 @@ export class PartitionedKeyValueTable {
     try {
       const mappings = this.mappings();
 
-      const load = async (lastKey: AWS.DynamoDB.Key | undefined) =>
-        this.dynamo
-          .query({
-            TableName: this.tableName,
-            KeyConditionExpression: `#partition = :partition`,
-            ExpressionAttributeNames: {
-              '#partition': mappings.partitionKeyFieldName,
+      const load = async (lastKey: DynamoKey | undefined) => {
+        const command = new QueryCommand({
+          TableName: this.tableName,
+          KeyConditionExpression: `#partition = :partition`,
+          ExpressionAttributeNames: {
+            '#partition': mappings.partitionKeyFieldName,
+          },
+          ExclusiveStartKey: lastKey,
+          ExpressionAttributeValues: {
+            ':partition': {
+              S: partition,
             },
-            ExclusiveStartKey: lastKey,
-            ExpressionAttributeValues: {
-              ':partition': {
-                S: partition,
-              },
-            },
-          })
-          .promise()
-          .catch(awsRethrow(`Partition: ${partition}`));
+          },
+        });
+
+        return this.dynamo.send(command);
+      };
 
       let result = await load(undefined);
 
@@ -198,9 +208,11 @@ export class PartitionedKeyValueTable {
         }
       }
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return [];
       }
+
+      log.error(`Failed to list all from partition: ${partition}`, e);
 
       throw e;
     }
@@ -290,9 +302,11 @@ export class PartitionedKeyValueTable {
 
       return true;
     } catch (e) {
-      if (hasAWSErrorCode(e) && e.code === 'ConditionalCheckFailedException') {
+      if (e instanceof ConditionalCheckFailedException) {
         return false;
       }
+
+      log.error(`Failed to set Partition: ${key.partition}, Sort: ${this.sortKey(key)}`, e);
 
       throw e;
     }
@@ -300,11 +314,12 @@ export class PartitionedKeyValueTable {
 
   /**
    * Method to update data to a key that points to a value list.
+   * If the data does not exist in the list already, it's still added to the list.
    *
    * @param key compound key that indexes to a `value[]`
    * @param data to be appended to the key
-   * @param setInclusion if this returns `true`, then nothing is added to the list
-   * @returns void
+   * @param setInclusion keys for which this returns `true` are removed from the list before appending the new value
+   * @returns true if the new value was appended to the list, false if the key was not found
    */
   async updateInSet<K extends string, V>(
     key: CompoundKey<K, V[]>,
@@ -325,7 +340,7 @@ export class PartitionedKeyValueTable {
     if (!(await this.setIfMd5Matches(key, updatedSet, previous?.md5))) {
       await sleep((250 + jitter(100 as Milliseconds)) as Milliseconds);
 
-      return this.removeFromSet(key, data, setInclusion);
+      return this.updateInSet(key, data, setInclusion);
     }
 
     return true;
@@ -354,28 +369,32 @@ export class PartitionedKeyValueTable {
   }
 
   protected async getRaw<T, P extends string>(key: CompoundKey<P, T>): Promise<{ data: T; md5?: string } | undefined> {
-    try {
-      const sortKey = this.sortKey(key);
+    const sortKey = this.sortKey(key);
 
+    try {
       const mappings = this.mappings();
 
-      const result = await this.dynamo
-        .getItem({
-          TableName: this.tableName,
-          Key: {
-            [mappings.sortKeyFieldName]: {
-              [mappings.sortKeyFieldAWSType]: sortKey,
-            },
-            [mappings.partitionKeyFieldName]: {
-              S: this.partitionKey(key),
-            },
+      const command = new GetItemCommand({
+        TableName: this.tableName,
+        Key: {
+          [mappings.sortKeyFieldName]:
+            mappings.sortKeyFieldAWSType === 'N'
+              ? {
+                N: sortKey,
+              }
+              : {
+                S: sortKey,
+              },
+          [mappings.partitionKeyFieldName]: {
+            S: this.partitionKey(key),
           },
-        })
-        .promise()
-        .catch(awsRethrow(`Partition: ${key.partition}, Sort: ${sortKey}`));
+        },
+      });
+
+      const result = await this.dynamo.send(command);
 
       if (result) {
-        const data = result.Item?.[mappings.dataFieldName].S;
+        const data = result.Item?.[mappings.dataFieldName]?.S;
 
         if (data) {
           return { data: JSON.parse(data) as T, md5: result.Item?.[mappings.md5]?.S };
@@ -384,9 +403,11 @@ export class PartitionedKeyValueTable {
 
       return undefined;
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return undefined;
       }
+
+      log.error(`Unable to get Partition: ${key.partition}, Sort: ${sortKey}`, e);
 
       throw e;
     }
@@ -397,44 +418,50 @@ export class PartitionedKeyValueTable {
     data: T,
     previousMd5: string | undefined
   ): Promise<boolean> {
-    try {
-      const sortKey = this.sortKey(key);
+    const sortKey = this.sortKey(key);
 
+    try {
       const mappings = this.mappings();
 
-      await this.dynamo
-        .putItem({
-          TableName: this.tableName,
-          ExpressionAttributeNames: {
-            '#md5': mappings.md5,
+      const command = new PutItemCommand({
+        TableName: this.tableName,
+        ExpressionAttributeNames: {
+          '#md5': mappings.md5,
+        },
+        ExpressionAttributeValues: {
+          ':md5': {
+            S: previousMd5 ?? ' ',
           },
-          ExpressionAttributeValues: {
-            ':md5': {
-              S: previousMd5 ?? ' ',
-            },
+        },
+        ConditionExpression: `attribute_not_exists(#md5) OR (#md5 = :md5)`,
+        Item: {
+          [mappings.partitionKeyFieldName]: {
+            S: this.partitionKey(key),
           },
-          ConditionExpression: `attribute_not_exists(#md5) OR (#md5 = :md5)`,
-          Item: {
-            [mappings.partitionKeyFieldName]: {
-              S: this.partitionKey(key),
-            },
-            [mappings.sortKeyFieldName]: {
-              [mappings.sortKeyFieldAWSType]: sortKey,
-            },
-            [mappings.dataFieldName]: {
-              S: JSON.stringify(data),
-            },
-            [mappings.md5]: {
-              S: consistentMd5(data),
-            },
+          [mappings.sortKeyFieldName]:
+            mappings.sortKeyFieldAWSType === 'N'
+              ? {
+                N: sortKey,
+              }
+              : {
+                S: sortKey,
+              },
+          [mappings.dataFieldName]: {
+            S: JSON.stringify(data),
           },
-        })
-        .promise()
-        .catch(awsRethrow(`Partition: ${key.partition}, Sort: ${sortKey}, Previous MD5: ${previousMd5}`));
+          [mappings.md5]: {
+            S: consistentMd5(data),
+          },
+        },
+      });
+
+      await this.dynamo.send(command);
     } catch (e) {
-      if (hasAWSErrorCode(e) && e.code === 'ConditionalCheckFailedException') {
+      if (e instanceof ConditionalCheckFailedException) {
         return false;
       }
+
+      log.error(`Failed to set Partition: ${key.partition}, Sort: ${sortKey}, Previous MD5: ${previousMd5}`, e);
 
       throw e;
     }
@@ -443,31 +470,37 @@ export class PartitionedKeyValueTable {
   }
 
   private async existsRaw<T, P extends string>(key: CompoundKey<P, T>): Promise<boolean> {
-    try {
-      const sortKey = this.sortKey(key);
+    const sortKey = this.sortKey(key);
 
+    try {
       const mappings = this.mappings();
 
-      const result = await this.dynamo
-        .getItem({
-          TableName: this.tableName,
-          Key: {
-            [mappings.sortKeyFieldName]: {
-              [mappings.sortKeyFieldAWSType]: sortKey,
-            },
-            [mappings.partitionKeyFieldName]: {
-              S: this.partitionKey(key),
-            },
+      const command = new GetItemCommand({
+        TableName: this.tableName,
+        Key: {
+          [mappings.sortKeyFieldName]:
+            mappings.sortKeyFieldAWSType === 'N'
+              ? {
+                N: sortKey,
+              }
+              : {
+                S: sortKey,
+              },
+          [mappings.partitionKeyFieldName]: {
+            S: this.partitionKey(key),
           },
-        })
-        .promise()
-        .catch(awsRethrow(`Partition: ${key.partition}, Sort: ${sortKey}`));
+        },
+      });
+
+      const result = await this.dynamo.send(command);
 
       return notNullOrUndefined(result.Item);
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return false;
       }
+
+      log.error(`Failed to get Partition: ${key.partition}, Sort: ${sortKey}`, e);
 
       throw e;
     }
@@ -477,28 +510,32 @@ export class PartitionedKeyValueTable {
     const mappings = this.mappings();
 
     for (const chunk of Arrays.grouped(key, 25)) {
-      await this.dynamo
-        .batchWriteItem({
-          RequestItems: {
-            [this.tableName]: chunk.map(item => ({
-              PutRequest: {
-                Item: {
-                  [mappings.partitionKeyFieldName]: {
-                    S: this.partitionKey(item.key),
-                  },
-                  [mappings.sortKeyFieldName]: {
-                    [mappings.sortKeyFieldAWSType]: this.sortKey(item.key),
-                  },
-                  [mappings.dataFieldName]: {
-                    S: JSON.stringify(item.data),
-                  },
+      const command = new BatchWriteItemCommand({
+        RequestItems: {
+          [this.tableName]: chunk.map(item => ({
+            PutRequest: {
+              Item: {
+                [mappings.partitionKeyFieldName]: {
+                  S: this.partitionKey(item.key),
+                },
+                [mappings.sortKeyFieldName]:
+                  mappings.sortKeyFieldAWSType === 'N'
+                    ? {
+                      N: this.sortKey(item.key),
+                    }
+                    : {
+                      S: this.sortKey(item.key),
+                    },
+                [mappings.dataFieldName]: {
+                  S: JSON.stringify(item.data),
                 },
               },
-            })),
-          },
-        })
-        .promise()
-        .catch(awsRethrow());
+            },
+          })),
+        },
+      });
+
+      await this.dynamo.send(command);
     }
   }
 
@@ -507,36 +544,45 @@ export class PartitionedKeyValueTable {
 
     const mappings = this.mappings();
 
-    await this.dynamo
-      .putItem({
-        TableName: this.tableName,
-        ExpressionAttributeNames: {
-          '#key': mappings.partitionKeyFieldName,
-          '#sort': mappings.sortKeyFieldName,
+    const command = new PutItemCommand({
+      TableName: this.tableName,
+      ExpressionAttributeNames: {
+        '#key': mappings.partitionKeyFieldName,
+        '#sort': mappings.sortKeyFieldName,
+      },
+      ExpressionAttributeValues: {
+        ':key': {
+          S: this.partitionKey(key),
         },
-        ExpressionAttributeValues: {
-          ':key': {
-            S: this.partitionKey(key),
-          },
-          ':sort': {
-            [mappings.sortKeyFieldAWSType]: sortKey,
-          },
+        ':sort':
+          mappings.sortKeyFieldAWSType === 'N'
+            ? {
+              N: sortKey,
+            }
+            : {
+              S: sortKey,
+            },
+      },
+      ConditionExpression: `attribute_not_exists(#key) OR (#sort <> :sort AND #key <> :key)`,
+      Item: {
+        [mappings.partitionKeyFieldName]: {
+          S: this.partitionKey(key),
         },
-        ConditionExpression: `attribute_not_exists(#key) OR (#sort <> :sort AND #key <> :key)`,
-        Item: {
-          [mappings.partitionKeyFieldName]: {
-            S: this.partitionKey(key),
-          },
-          [mappings.sortKeyFieldName]: {
-            [mappings.sortKeyFieldAWSType]: sortKey,
-          },
-          [mappings.dataFieldName]: {
-            S: JSON.stringify(data),
-          },
+        [mappings.sortKeyFieldName]:
+          mappings.sortKeyFieldAWSType === 'N'
+            ? {
+              N: sortKey,
+            }
+            : {
+              S: sortKey,
+            },
+        [mappings.dataFieldName]: {
+          S: JSON.stringify(data),
         },
-      })
-      .promise()
-      .catch(awsRethrow(`Partition: ${key.partition}, Sort: ${sortKey}`));
+      },
+    });
+
+    await this.dynamo.send(command);
   }
 
   private async deleteSortKey<P extends string>(key: CompoundKey<P>): Promise<void> {
@@ -544,20 +590,30 @@ export class PartitionedKeyValueTable {
 
     const mappings = this.mappings();
 
-    await this.dynamo
-      .deleteItem({
-        TableName: this.tableName,
-        Key: {
-          [mappings.partitionKeyFieldName]: {
-            S: this.partitionKey(key),
-          },
-          [mappings.sortKeyFieldName]: {
-            [mappings.sortKeyFieldAWSType]: sortKey,
-          },
+    const command = new DeleteItemCommand({
+      TableName: this.tableName,
+      Key: {
+        [mappings.partitionKeyFieldName]: {
+          S: this.partitionKey(key),
         },
-      })
-      .promise()
-      .catch(awsRethrow(`Partition: ${key.partition}, Sort: ${sortKey}`));
+        [mappings.sortKeyFieldName]:
+          mappings.sortKeyFieldAWSType === 'N'
+            ? {
+              N: sortKey,
+            }
+            : {
+              S: sortKey,
+            },
+      },
+    });
+
+    try {
+      await this.dynamo.send(command);
+    } catch (e) {
+      log.error(`Failed to delete item Partition: ${key.partition}, Sort: ${sortKey}`, e);
+
+      throw e;
+    }
   }
 
   private async deletePartition(partition: string): Promise<void> {
@@ -566,25 +622,29 @@ export class PartitionedKeyValueTable {
     // have to read all the keys and delete them
     for await (const items of this.listAll(partition)) {
       for (const chunk of Arrays.grouped(items, 25)) {
-        await this.dynamo
-          .batchWriteItem({
-            RequestItems: {
-              [this.tableName]: chunk.map(item => ({
-                DeleteRequest: {
-                  Key: {
-                    [mappings.partitionKeyFieldName]: {
-                      S: partition,
-                    },
-                    [mappings.sortKeyFieldName]: {
-                      [mappings.sortKeyFieldAWSType]: item.key,
-                    },
+        const command = new BatchWriteItemCommand({
+          RequestItems: {
+            [this.tableName]: chunk.map(item => ({
+              DeleteRequest: {
+                Key: {
+                  [mappings.partitionKeyFieldName]: {
+                    S: partition,
                   },
+                  [mappings.sortKeyFieldName]:
+                    mappings.sortKeyFieldAWSType === 'N'
+                      ? {
+                        N: item.key,
+                      }
+                      : {
+                        S: item.key,
+                      },
                 },
-              })),
-            },
-          })
-          .promise()
-          .catch(awsRethrow());
+              },
+            })),
+          },
+        });
+
+        await this.dynamo.send(command);
       }
     }
   }

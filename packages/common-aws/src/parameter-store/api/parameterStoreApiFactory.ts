@@ -1,7 +1,7 @@
-import { ConfigurationOptions } from 'aws-sdk';
+import { AwsCredentialIdentity } from '@smithy/types';
 
 import { ParameterStoreApi } from './parameterStoreApi';
 
 export interface ParameterStoreApiFactory {
-  getApi(creds?: ConfigurationOptions): Promise<ParameterStoreApi>;
+  getApi(creds?: AwsCredentialIdentity): Promise<ParameterStoreApi>;
 }

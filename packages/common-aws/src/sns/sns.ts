@@ -1,16 +1,12 @@
-import SNS = require('aws-sdk/clients/sns');
+import { PublishCommand, PublishCommandOutput, SNSClient } from '@aws-sdk/client-sns';
 import { log, timed } from '@paradoxical-io/common-server';
-import { AWSError } from 'aws-sdk';
-import { PromiseResult } from 'aws-sdk/lib/request';
-
-import { awsRethrow } from '../errors';
 
 export class SNSManager {
   static newSNSClient() {
-    return new SNS();
+    return new SNSClient();
   }
 
-  constructor(private sns: SNS = SNSManager.newSNSClient()) {}
+  constructor(private sns: SNSClient = new SNSClient()) {}
 
   /**
    * Sends an SMS message
@@ -24,10 +20,10 @@ export class SNSManager {
     phoneNumber: string,
     message: string,
     opts: { mode: 'Transactional' | 'Promotional' } = { mode: 'Promotional' }
-  ): Promise<PromiseResult<SNS.PublishResponse, AWSError>> {
+  ): Promise<PublishCommandOutput> {
     log.with({ phoneNumber }).info(`Sending SNS message to number: '${message}'`);
 
-    const params = {
+    const command = new PublishCommand({
       Message: message,
       PhoneNumber: phoneNumber,
       MessageAttributes: {
@@ -36,8 +32,8 @@ export class SNSManager {
           StringValue: opts.mode,
         },
       },
-    };
+    });
 
-    return this.sns.publish(params).promise().catch(awsRethrow());
+    return this.sns.send(command);
   }
 }

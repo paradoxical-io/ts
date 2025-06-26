@@ -1,11 +1,13 @@
+import {
+  SendMessageBatchCommand,
+  SendMessageBatchRequestEntry,
+  SendMessageCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
 import { asSeconds, defaultTimeProvider } from '@paradoxical-io/common';
 import { traceID } from '@paradoxical-io/common-server';
 import { bottom, EpochMS, notNullOrUndefined, nullOrUndefined, Seconds } from '@paradoxical-io/types';
-import AWS from 'aws-sdk';
-import { SendMessageBatchRequestEntry } from 'aws-sdk/clients/sqs';
 import * as _ from 'lodash';
-
-import { awsRethrow } from '../errors';
 
 export interface SQSEvent<T> {
   timestamp: EpochMS;
@@ -58,7 +60,7 @@ export interface Publisher<T> {
 }
 
 export class SQSPublisher<T> implements Publisher<T> {
-  constructor(private queueUrl: string, private sqs = new AWS.SQS()) {}
+  constructor(private queueUrl: string, private sqs = new SQSClient()) {}
 
   async publish(data: T | T[], opts?: PublishOptions): Promise<void> {
     if (data instanceof Array) {
@@ -72,14 +74,14 @@ export class SQSPublisher<T> implements Publisher<T> {
 
     const delaySeconds = getInvisibilityDelay(opts);
     const now = new Date();
-    await this.sqs
-      .sendMessage({
-        MessageBody: JSON.stringify(createEvent(now, data, opts)),
-        QueueUrl: this.queueUrl,
-        DelaySeconds: delaySeconds,
-      })
-      .promise()
-      .catch(awsRethrow());
+
+    const command = new SendMessageCommand({
+      MessageBody: JSON.stringify(createEvent(now, data, opts)),
+      QueueUrl: this.queueUrl,
+      DelaySeconds: delaySeconds,
+    });
+
+    await this.sqs.send(command);
   }
 
   private async publishBatch(data: T[], opts?: PublishOptions): Promise<void> {
@@ -97,13 +99,12 @@ export class SQSPublisher<T> implements Publisher<T> {
           } as SendMessageBatchRequestEntry)
       );
 
-      await this.sqs
-        .sendMessageBatch({
-          Entries: entries,
-          QueueUrl: this.queueUrl,
-        })
-        .promise()
-        .catch(awsRethrow());
+      const command = new SendMessageBatchCommand({
+        Entries: entries,
+        QueueUrl: this.queueUrl,
+      });
+
+      await this.sqs.send(command);
     }
   }
 }
@@ -126,7 +127,7 @@ export function getInvisibilityDelay(opts: PublishOptions | undefined, timeProvi
       const maxVizTimeout = opts?.delay?.maxVisibilityTimeoutSeconds ?? asSeconds(15, 'minutes');
 
       // sqs max delay publish is 15 minutes
-      const timeInSecondsTillProcessing = (opts.delay.epoch - timeProvider.epochMS()) / 1000;
+      const timeInSecondsTillProcessing = Math.ceil((opts.delay.epoch - timeProvider.epochMS()) / 1000);
 
       // if it was calculated in the past send a message now
       if (timeInSecondsTillProcessing < 0) {

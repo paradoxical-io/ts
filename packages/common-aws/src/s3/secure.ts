@@ -1,17 +1,25 @@
+import { DecryptCommand, EncryptCommand, KMSClient } from '@aws-sdk/client-kms';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  GetObjectCommandOutput,
+  HeadObjectCommand,
+  ListObjectVersionsCommand,
+  NoSuchKey,
+  NotFound,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import {
   EncryptDecrypt,
   EncryptedData,
-  EncryptionParams,
+  EncryptionParams, log,
   Secret,
   SecureStore,
   SecureVersion,
 } from '@paradoxical-io/common-server';
 import { Brand, ErrorCode, ErrorWithCode } from '@paradoxical-io/types';
-import AWS from 'aws-sdk';
-import { PromiseResult } from 'aws-sdk/lib/request';
 import Joi from 'joi';
-
-import { awsRethrow } from '../errors';
 
 export type DEK = Brand<string, 'DataEncryptionKey'>;
 
@@ -25,6 +33,8 @@ export interface Envelope {
   payload: EncryptedData;
 }
 
+// we don't want to pull in all of common-hapi to do this lightweight validation
+// eslint-disable-next-line ban/ban
 const envelopSchema = Joi.object({
   // eslint-disable-next-line ban/ban
   params: Joi.object({
@@ -40,26 +50,26 @@ const envelopSchema = Joi.object({
  * with a unique data encryption key, and wraps that key with a master KMS key (the key encryption key)
  */
 export class S3SecureStore implements SecureStore {
-  private crypto: EncryptDecrypt;
+  private readonly crypto: EncryptDecrypt;
 
-  private s3Bucket: string;
+  private readonly s3Bucket: string;
 
-  private s3: AWS.S3;
+  private readonly s3: S3Client;
 
-  private kmsKeyID: string;
+  private readonly kmsKeyID: string;
 
-  private kms: AWS.KMS;
+  private readonly kms: KMSClient;
 
   constructor({
-    kms = new AWS.KMS(),
-    kmsKeyID,
-    s3 = new AWS.S3(),
-    s3Bucket,
-    crypto = new EncryptDecrypt(),
-  }: {
-    kms?: AWS.KMS;
+                kms = new KMSClient(),
+                kmsKeyID,
+                s3 = new S3Client(),
+                s3Bucket,
+                crypto = new EncryptDecrypt(),
+              }: {
+    kms?: KMSClient;
     kmsKeyID: string;
-    s3?: AWS.S3;
+    s3?: S3Client;
     s3Bucket: string;
     crypto?: EncryptDecrypt;
   }) {
@@ -75,17 +85,16 @@ export class S3SecureStore implements SecureStore {
     const encrypted = await this.crypto.encrypt(data);
 
     // for the data encryption key encrypt the key using kms
-    const dek = await this.kms
-      .encrypt({
-        EncryptionContext: {
-          key,
-          auth: encrypted.params.auth,
-        },
-        KeyId: this.kmsKeyID,
-        Plaintext: encrypted.params.key,
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new EncryptCommand({
+      EncryptionContext: {
+        key,
+        auth: encrypted.params.auth,
+      },
+      KeyId: this.kmsKeyID,
+      Plaintext: Buffer.from(encrypted.params.key),
+    });
+
+    const dek = await this.kms.send(command);
 
     if (!dek.CiphertextBlob) {
       throw new Error('Ciphertext was undefined for encrypting dek');
@@ -94,7 +103,7 @@ export class S3SecureStore implements SecureStore {
     // create a new envelope using the newly created dek and the other non-secret params
     const envelope: Envelope = {
       params: {
-        key: dek.CiphertextBlob.toString('hex') as DEK,
+        key: Buffer.from(dek.CiphertextBlob).toString('hex') as DEK,
         auth: encrypted.params.auth,
         iv: encrypted.params.iv,
       },
@@ -102,68 +111,78 @@ export class S3SecureStore implements SecureStore {
     };
 
     // write the blob to s3
-    await this.s3
-      .putObject({
-        Bucket: this.s3Bucket,
-        Key: key,
-        Body: JSON.stringify(envelope),
-      })
-      .promise()
-      .catch(awsRethrow(`Writing ${this.s3Bucket}/${key}`));
+    const putObjectCommand = new PutObjectCommand({
+      Bucket: this.s3Bucket,
+      Key: key,
+      Body: JSON.stringify(envelope),
+    });
+
+    try {
+      await this.s3.send(putObjectCommand);
+    } catch (e) {
+      log.error(`Failed to write ${this.s3Bucket}/${key}`, e);
+
+      throw e;
+    }
   }
 
   async exists(key: string, version?: string): Promise<boolean> {
     try {
-      await this.s3
-        .headObject({
-          Bucket: this.s3Bucket,
-          Key: key,
-          VersionId: version,
-        })
-        .promise()
-        .catch(awsRethrow(`Head object on ${this.s3Bucket}/${key}`));
+      const command = new HeadObjectCommand({
+        Bucket: this.s3Bucket,
+        Key: key,
+        VersionId: version,
+      });
+
+      await this.s3.send(command);
 
       return true;
     } catch (e) {
-      if (e instanceof Error && (e as AWS.AWSError).statusCode === 404) {
+      if (e instanceof NotFound) {
         return false;
       }
+
+      log.error(`Failed to get Head object on ${this.s3Bucket}/${key}`, e);
+
       throw e;
     }
   }
 
   async remove(key: string): Promise<void> {
     try {
-      await this.s3
-        .deleteObject({
-          Bucket: this.s3Bucket,
-          Key: key,
-        })
-        .promise()
-        .catch(awsRethrow(`Remove object on ${this.s3Bucket}/${key}`));
+      const command = new DeleteObjectCommand({
+        Bucket: this.s3Bucket,
+        Key: key,
+      });
+
+      await this.s3.send(command);
     } catch (e) {
-      if (e instanceof Error && (e as AWS.AWSError).statusCode === 404) {
-        return;
-      }
+      // DeleteObjectCommand will still be successful if it attempts to delete
+      // a key that doesn't exist
+      log.error(`Failed to remove object on ${this.s3Bucket}/${key}`, e);
+
       throw e;
     }
   }
 
   async get(key: string, version?: string): Promise<Buffer | undefined> {
-    let data: PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>;
+    let data: GetObjectCommandOutput;
+
     try {
-      data = await this.s3
-        .getObject({
-          Bucket: this.s3Bucket,
-          Key: key,
-          VersionId: version,
-        })
-        .promise()
-        .catch(awsRethrow(`Get object on ${this.s3Bucket}/${key}`));
+      const command = new GetObjectCommand({
+        Bucket: this.s3Bucket,
+        Key: key,
+        VersionId: version,
+      });
+
+      data = await this.s3.send(command);
     } catch (e) {
-      if (e instanceof Error && (e as AWS.AWSError).statusCode === 404) {
+      if (e instanceof NoSuchKey) {
         return undefined;
       }
+
+      log.error(`Failed to get object ${this.s3Bucket}/${key}`, e);
+
       throw e;
     }
 
@@ -172,21 +191,21 @@ export class S3SecureStore implements SecureStore {
     }
 
     // validate our envelope is the shape we expect so we can't accidentally inject invalid data
-    const envelope = JSON.parse(data.Body.toString('utf8'));
+    const body = await data.Body.transformToString('utf8');
+    const envelope = JSON.parse(body);
 
     assertIsEnvelope(envelope);
 
     // decrypt the dek using kms
-    const encryptionKeyResult = await this.kms
-      .decrypt({
-        CiphertextBlob: Buffer.from(envelope.params.key, 'hex'),
-        EncryptionContext: {
-          key,
-          auth: envelope.params.auth,
-        },
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new DecryptCommand({
+      CiphertextBlob: Buffer.from(envelope.params.key, 'hex'),
+      EncryptionContext: {
+        key,
+        auth: envelope.params.auth,
+      },
+    });
+
+    const encryptionKeyResult = await this.kms.send(command);
 
     if (!encryptionKeyResult.Plaintext) {
       throw new ErrorWithCode(ErrorCode.Invalid, { errorMessage: 'DEK was unable to decrypt' });
@@ -196,24 +215,25 @@ export class S3SecureStore implements SecureStore {
     return this.crypto.decrypt(envelope.payload, {
       auth: envelope.params.auth,
       iv: envelope.params.iv,
-      key: encryptionKeyResult.Plaintext.toString() as Secret,
+      key: Buffer.from(encryptionKeyResult.Plaintext).toString() as Secret,
     });
   }
 
   async versions(key: string): Promise<SecureVersion[]> {
-    const versions = await this.s3
-      .listObjectVersions({
-        Bucket: this.s3Bucket,
-        Prefix: key,
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new ListObjectVersionsCommand({
+      Bucket: this.s3Bucket,
+      Prefix: key,
+    });
+
+    const versions = await this.s3.send(command);
 
     return (
-      versions.Versions?.filter(v => !!v.VersionId).map(v => ({
-        version: v.VersionId!,
-        lastModified: v.LastModified,
-      })) ?? []
+      versions.Versions?.filter(v => !!v.VersionId)
+        .filter(v => v.Key === key)
+        .map(v => ({
+          version: v.VersionId!,
+          lastModified: v.LastModified,
+        })) ?? []
     );
   }
 }

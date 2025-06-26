@@ -1,10 +1,17 @@
+import {
+  ChangeMessageVisibilityCommand,
+  DeleteMessageCommand,
+  Message,
+  ReceiveMessageCommand,
+  SendMessageBatchCommand,
+  SendMessageCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
 import { defaultTimeProvider, sleep, TimeProvider } from '@paradoxical-io/common';
 import { currentEnvironment, isLocal, log, Metrics, signals, withNewTrace } from '@paradoxical-io/common-server';
 import { bottom, Brand, EpochMS, Milliseconds, notNullOrUndefined, Seconds } from '@paradoxical-io/types';
-import AWS, { SQS } from 'aws-sdk';
 
 import { PartitionedKeyValueTable } from '../dynamo';
-import { awsRethrow } from '../errors';
 import { SQSConfig } from './config';
 import { DevProxyProvider, ProxyQueueProvider } from './proxy/proxyProvider';
 import { getInvisibilityDelay, SQSEvent } from './publisher';
@@ -29,7 +36,7 @@ export interface Options {
   /**
    * The sqs client instance. If not set the default one will be used
    */
-  sqs: AWS.SQS;
+  sqs: SQSClient;
 
   /**
    * If set to true will make a message immediately visible on any unhandled error
@@ -131,7 +138,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
   static defaultOptions: Options = {
     longPollWaitTimeSeconds: 20 as Seconds,
     maxNumberOfMessages: 10,
-    sqs: new AWS.SQS(),
+    sqs: new SQSClient(),
     makeAvailableOnError: false,
     timeProvider: defaultTimeProvider(),
   };
@@ -140,7 +147,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
   private readonly opts: Options;
 
-  private readonly sqs: AWS.SQS;
+  private readonly sqs: SQSClient;
 
   private readonly queueName: QueueName;
 
@@ -157,7 +164,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
    * Adhoc processes a message of a raw sqs queue (lambda/etc)
    * @param message
    */
-  async adhoc(message: Pick<AWS.SQS.Message, 'Body' | 'ReceiptHandle'>): Promise<void> {
+  async adhoc(message: Pick<Message, 'Body' | 'ReceiptHandle'>): Promise<void> {
     await this.handleMessage(message);
   }
 
@@ -186,7 +193,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
     };
   }
 
-  protected async handleMessage(message: Pick<AWS.SQS.Message, 'Body' | 'ReceiptHandle'>): Promise<void> {
+  protected async handleMessage(message: Pick<Message, 'Body' | 'ReceiptHandle'>): Promise<void> {
     if (!(message.Body && message.ReceiptHandle)) {
       return;
     }
@@ -265,20 +272,19 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
         if (this.opts.makeAvailableOnError && message.ReceiptHandle) {
           log.debug('Making message immediately available');
 
-          await this.sqs
-            .changeMessageVisibility({
-              ReceiptHandle: message.ReceiptHandle,
-              QueueUrl: this.queueUrl,
-              VisibilityTimeout: 0,
-            })
-            .promise()
-            .catch(awsRethrow());
+          const command = new ChangeMessageVisibilityCommand({
+            ReceiptHandle: message.ReceiptHandle,
+            QueueUrl: this.queueUrl,
+            VisibilityTimeout: 0,
+          });
+
+          await this.sqs.send(command);
         }
       }, traceId);
     }
   }
 
-  protected processRaw(data: SQSEvent<T>): Promise<MessageProcessorResult> {
+  protected async processRaw(data: SQSEvent<T>): Promise<MessageProcessorResult> {
     return this.process(data.data);
   }
 
@@ -303,14 +309,13 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
       try {
         // long poll wait for messages
-        const result = await this.sqs
-          .receiveMessage({
-            QueueUrl: this.queueUrl,
-            MaxNumberOfMessages: this.opts.maxNumberOfMessages,
-            WaitTimeSeconds: this.opts.longPollWaitTimeSeconds,
-          })
-          .promise()
-          .catch(awsRethrow());
+        const command = new ReceiveMessageCommand({
+          QueueUrl: this.queueUrl,
+          MaxNumberOfMessages: this.opts.maxNumberOfMessages,
+          WaitTimeSeconds: this.opts.longPollWaitTimeSeconds,
+        });
+
+        const result = await this.sqs.send(command);
 
         if (!result.Messages || result.Messages.length === 0) {
           // done flushing
@@ -341,13 +346,12 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
   }
 
   private async ack(handle: string): Promise<void> {
-    await this.sqs
-      .deleteMessage({
-        QueueUrl: this.queueUrl,
-        ReceiptHandle: handle,
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new DeleteMessageCommand({
+      QueueUrl: this.queueUrl,
+      ReceiptHandle: handle,
+    });
+
+    await this.sqs.send(command);
   }
 
   private async republishLater(event: SQSEvent<T>, result: RepublishMessage): Promise<boolean> {
@@ -391,26 +395,25 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
       )} seconds. Reason: ${result.reason}`
     );
 
-    await this.sqs
-      .sendMessage({
-        MessageBody: messageBody,
-        QueueUrl: this.queueUrl,
-        DelaySeconds: determineRetryDelay(result, nextEvent.republishContext.publishCount),
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new SendMessageCommand({
+      MessageBody: messageBody,
+      QueueUrl: this.queueUrl,
+      DelaySeconds: determineRetryDelay(result, nextEvent.republishContext.publishCount),
+    });
+
+    await this.sqs.send(command);
 
     return true;
   }
 
   /**
-   * Returns true or false depending if we should ack the message by handing the message off to the consumer
+   * Returns true or false depending on if we should ack the message by handing the message off to the consumer
    * or deferring the message if necessary
    * @param event
    * @param message
    * @private
    */
-  private async handMessageToConsumer(event: SQSEvent<T>, message: AWS.SQS.Message): Promise<boolean> {
+  private async handMessageToConsumer(event: SQSEvent<T>, message: Message): Promise<boolean> {
     if (event.republishContext?.processAfter && this.timeProvider.epochMS() < event.republishContext.processAfter) {
       log.info(`Message should be processed after ${event.republishContext?.processAfter}, not handling yet`);
 
@@ -440,20 +443,21 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
     if (result && message.ReceiptHandle) {
       switch (result.type) {
-        case 'retry-later':
+        case 'retry-later': {
           log.info(
             `Requested to retry event later. Making message visible in ${result.retryInSeconds} seconds. Reason: ${result.reason}`
           );
 
-          await this.sqs
-            .changeMessageVisibility({
-              ReceiptHandle: message.ReceiptHandle,
-              QueueUrl: this.queueUrl,
-              VisibilityTimeout: result.retryInSeconds,
-            })
-            .promise()
-            .catch(awsRethrow());
+          const command = new ChangeMessageVisibilityCommand({
+            ReceiptHandle: message.ReceiptHandle,
+            QueueUrl: this.queueUrl,
+            VisibilityTimeout: result.retryInSeconds,
+          });
+
+          await this.sqs.send(command);
           return false;
+        }
+
         case 'republish-later':
           return this.republishLater(event, result);
         default:
@@ -464,7 +468,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
     return true;
   }
 
-  private async proxy(messages: SQS.MessageList | undefined) {
+  private async proxy(messages: Message[] | undefined) {
     // proxy not allowed in prod or when running local
     if (currentEnvironment() === 'prod' || isLocal) {
       return;
@@ -481,12 +485,12 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
     await Promise.all(
       queues.map(async queue => {
-        await this.sqs
-          .sendMessageBatch({
-            QueueUrl: queue,
-            Entries: messages.map((m, idx) => ({ MessageBody: m.Body ?? '', Id: idx.toString() })),
-          })
-          .promise();
+        const command = new SendMessageBatchCommand({
+          QueueUrl: queue,
+          Entries: messages.map((m, idx) => ({ MessageBody: m.Body ?? '', Id: idx.toString() })),
+        });
+
+        await this.sqs.send(command);
 
         log.info(`Proxied ${messages.length} messages to ${queue}`);
       })
@@ -506,7 +510,7 @@ export function determineRetryDelay(result: RepublishMessage, publishCount: numb
 }
 
 /**
- * Utilility class to create a consumer from a method
+ * Utility class to create a consumer from a method
  * @param method
  * @param queue
  * @param opts
@@ -543,7 +547,10 @@ export class FunctionalConsumerRaw<T> extends SQSConsumer<T> {
   }
 }
 
-export function newConsumer<T>(method: (event: T) => Promise<MessageProcessorResult>, config: SQSConfig) {
+export function newConsumer<T>(
+  method: (event: T) => Promise<MessageProcessorResult>,
+  config: SQSConfig
+) {
   return new FunctionalConsumer<T>(method, config.queueUrl, {
     maxNumberOfMessages: config.maxNumberOfMessages,
     proxyProvider: currentEnvironment() === 'prod' ? undefined : new DevProxyProvider(new PartitionedKeyValueTable()),

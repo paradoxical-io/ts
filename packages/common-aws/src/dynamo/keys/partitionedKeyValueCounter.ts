@@ -1,12 +1,17 @@
-import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
+import {
+  BatchGetItemCommand,
+  DeleteItemCommand,
+  DynamoDBClient,
+  ResourceNotFoundException,
+  UpdateItemCommand,
+} from '@aws-sdk/client-dynamodb';
 import { Arrays, propertyOf } from '@paradoxical-io/common';
 import { CompoundKey, SortKey } from '@paradoxical-io/types';
-import AWS from 'aws-sdk';
 
-import { awsRethrow } from '../../errors';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
+import { log } from '@paradoxical-io/common-server';
 
 export class PartitionedKeyCounterTableDao<T extends string = string> implements DynamoDao {
   @hashKey()
@@ -29,15 +34,15 @@ export interface KeyCount<K extends string = string> {
  * An atomic key value counter for partitioned values
  */
 export class PartitionedKeyValueCounter {
-  private readonly dynamo: AWS.DynamoDB;
+  private readonly dynamo: DynamoDBClient;
 
   private readonly tableName: string;
 
   constructor({
-    dynamo = new AWS.DynamoDB(),
-    tableName = dynamoTableName('partitioned_keys'),
-  }: {
-    dynamo?: AWS.DynamoDB;
+                dynamo = new DynamoDBClient(),
+                tableName = dynamoTableName('partitioned_keys'),
+              }: {
+    dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
   }) {
     assertTableNameValid(tableName);
@@ -62,7 +67,7 @@ export class PartitionedKeyValueCounter {
 
       return undefined;
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return undefined;
       }
 
@@ -101,29 +106,28 @@ export class PartitionedKeyValueCounter {
     keys: Array<PartitionedKeyCounterTableDao<K>>
   ): Promise<Array<KeyCount<K>>> {
     const promises = Arrays.grouped(keys, 100).map(async idGroup => {
-      const result = await this.dynamo
-        .batchGetItem({
-          RequestItems: {
-            [this.tableName]: {
-              Keys: idGroup.map(data => ({
-                [propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]: {
-                  S: data.partitionKey,
-                },
-                [propertyOf<PartitionedKeyCounterTableDao>('sortKey')]: {
-                  S: data.sortKey,
-                },
-              })),
-            },
+      const command = new BatchGetItemCommand({
+        RequestItems: {
+          [this.tableName]: {
+            Keys: idGroup.map(data => ({
+              [propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]: {
+                S: data.partitionKey,
+              },
+              [propertyOf<PartitionedKeyCounterTableDao>('sortKey')]: {
+                S: data.sortKey,
+              },
+            })),
           },
-        })
-        .promise()
-        .catch(awsRethrow());
+        },
+      });
+
+      const result = await this.dynamo.send(command);
 
       if (result?.Responses) {
-        return result.Responses[this.tableName].map(result => {
+        return result.Responses[this.tableName]!.map(result => {
           const item: KeyCount<K> = {
-            partitionKey: result[propertyOf<PartitionedKeyCounterTableDao>('partitionKey')].S!.toString() as K,
-            sortKey: result[propertyOf<PartitionedKeyCounterTableDao>('sortKey')].S!.toString() as SortKey,
+            partitionKey: result[propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]!.S!.toString() as K,
+            sortKey: result[propertyOf<PartitionedKeyCounterTableDao>('sortKey')]!.S!.toString() as SortKey,
             count: Number(result[propertyOf<PartitionedKeyCounterTableDao>('count')]?.N ?? 0),
           };
 
@@ -140,52 +144,58 @@ export class PartitionedKeyValueCounter {
   }
 
   private async incrRaw(data: PartitionedKeyCounterTableDao): Promise<number> {
-    const result = await this.dynamo
-      .updateItem({
-        TableName: this.tableName,
-        Key: {
-          [propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]: {
-            S: data.partitionKey,
-          },
-          [propertyOf<PartitionedKeyCounterTableDao>('sortKey')]: {
-            S: data.sortKey,
-          },
+    const command = new UpdateItemCommand({
+      TableName: this.tableName,
+      Key: {
+        [propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]: {
+          S: data.partitionKey,
         },
-        UpdateExpression: 'add #count :value',
-        ExpressionAttributeNames: {
-          '#count': propertyOf<PartitionedKeyCounterTableDao>('count'),
+        [propertyOf<PartitionedKeyCounterTableDao>('sortKey')]: {
+          S: data.sortKey,
         },
-        ExpressionAttributeValues: {
-          ':value': {
-            N: (data.count ?? 0).toString(),
-          },
+      },
+      UpdateExpression: 'add #count :value',
+      ExpressionAttributeNames: {
+        '#count': propertyOf<PartitionedKeyCounterTableDao>('count'),
+      },
+      ExpressionAttributeValues: {
+        ':value': {
+          N: (data.count ?? 0).toString(),
         },
-        ReturnValues: 'UPDATED_NEW',
-      })
-      .promise()
-      .catch(
-        awsRethrow(`failed to increment ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`)
-      );
+      },
+      ReturnValues: 'UPDATED_NEW',
+    });
 
-    return Number(result.Attributes![propertyOf<PartitionedKeyCounterTableDao>('count')].N);
+    try {
+      const result = await this.dynamo.send(command);
+
+      return Number(result.Attributes![propertyOf<PartitionedKeyCounterTableDao>('count')]!.N);
+    } catch (e) {
+      log.error(`failed to increment ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`, e);
+
+      throw e;
+    }
   }
 
   private async deleteRaw(data: PartitionedKeyCounterTableDao): Promise<void> {
-    await this.dynamo
-      .deleteItem({
-        TableName: this.tableName,
-        Key: {
-          [propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]: {
-            S: data.partitionKey,
-          },
-          [propertyOf<PartitionedKeyCounterTableDao>('sortKey')]: {
-            S: data.sortKey,
-          },
+    const command = new DeleteItemCommand({
+      TableName: this.tableName,
+      Key: {
+        [propertyOf<PartitionedKeyCounterTableDao>('partitionKey')]: {
+          S: data.partitionKey,
         },
-      })
-      .promise()
-      .catch(
-        awsRethrow(`failed to delete ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`)
-      );
+        [propertyOf<PartitionedKeyCounterTableDao>('sortKey')]: {
+          S: data.sortKey,
+        },
+      },
+    });
+
+    try {
+      await this.dynamo.send(command);
+    } catch (e) {
+      log.error(`failed to delete ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`, e);
+
+      throw e;
+    }
   }
 }

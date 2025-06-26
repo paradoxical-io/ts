@@ -1,41 +1,61 @@
-import { DataMapper } from '@aws/dynamodb-data-mapper';
+import { getSchema } from '@aws/dynamodb-data-mapper';
+import { keysFromSchema } from '@aws/dynamodb-data-marshaller';
+import { CreateTableCommand, DynamoDBClient, waitUntilTableExists } from '@aws-sdk/client-dynamodb';
+import { ConfiguredRetryStrategy } from '@aws-sdk/util-retry';
 import { Docker, newDocker } from '@paradoxical-io/common-server/dist/test/docker';
-import AWS from 'aws-sdk';
 
-import { awsRethrow } from '../errors';
-import { DynamoDao, setDynamoTable } from './mapper';
+import { DynamoDao } from './mapper';
 
 export class DynamoDocker {
-  private readonly mapper: DataMapper;
-
-  constructor(public container: Docker, public dynamo: AWS.DynamoDB) {
-    this.mapper = new DataMapper({ client: dynamo });
-  }
+  constructor(public container: Docker, public dynamo: DynamoDBClient) {}
 
   async createTable<T extends DynamoDao>(descriptor: new () => T, tableName?: string): Promise<void> {
-    if (tableName) {
-      setDynamoTable(descriptor, tableName);
-    }
+    const schema = getSchema(descriptor.prototype);
+    const { attributes, tableKeys } = keysFromSchema(schema);
 
-    await this.mapper
-      .ensureTableExists(descriptor, { readCapacityUnits: 1, writeCapacityUnits: 1 })
-      .catch(awsRethrow());
+    const attributeDefs = Object.keys(attributes).map(name => ({
+      AttributeName: name,
+      AttributeType: attributes[name],
+    }));
+
+    const keySchema = Object.keys(tableKeys).map(name => ({
+      AttributeName: name,
+      KeyType: tableKeys[name],
+    }));
+
+    const command = new CreateTableCommand({
+      TableName: tableName,
+      AttributeDefinitions: attributeDefs,
+      KeySchema: keySchema,
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1,
+      },
+    });
+
+    const result = await this.dynamo.send(command);
+
+    if (result.TableDescription?.TableStatus !== 'ACTIVE') {
+      await waitUntilTableExists({ client: this.dynamo, maxWaitTime: 30 }, { TableName: tableName });
+    }
   }
 }
 
 export async function newDynamoDocker(): Promise<DynamoDocker> {
   const container = await newDocker({
-    image: 'amazon/dynamodb-local:1.12.0',
+    image: 'amazon/dynamodb-local:latest',
     exposePorts: [8000],
   });
 
-  await container.waitForPort(container.mapping[8000]);
+  await container.waitForPort(container.mapping[8000]!);
 
   const base = `http://localhost:${container.mapping[8000]}`;
 
-  const dynamo = new AWS.DynamoDB({
+  const dynamo = new DynamoDBClient({
     endpoint: base,
     region: 'us-west-2',
+    // added retry logic as there appears to be intermittent timeout errors with dynamodb-local
+    retryStrategy: new ConfiguredRetryStrategy(4, (attempt: number) => 100 + attempt * 1000),
   });
 
   return new DynamoDocker(container, dynamo);

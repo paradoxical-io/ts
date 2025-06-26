@@ -1,6 +1,6 @@
+import { SSMClient } from '@aws-sdk/client-ssm';
 import { StaticConfigProvider, ValueProvider } from '@paradoxical-io/common-server';
-import { ConfigurationOptions } from 'aws-sdk';
-import SSM from 'aws-sdk/clients/ssm';
+import { AwsCredentialIdentity } from '@smithy/types';
 
 import { ParameterStoreApi } from './api';
 import { ParameterStoreApiFactory } from './api/parameterStoreApiFactory';
@@ -10,8 +10,10 @@ import { ParameterStoreConfigProvider, ReloadableParameterStoreConfigProvider } 
  * Creates a default ParameterStoreAPI with a live AWS SSM client
  */
 export const parameterStoreApiFactory: ParameterStoreApiFactory = {
-  getApi: async (creds?: ConfigurationOptions) => {
-    const ssm = new SSM(creds);
+  getApi: async (creds?: AwsCredentialIdentity) => {
+    const ssm = new SSMClient({
+      credentials: creds,
+    });
     return new ParameterStoreApi(ssm);
   },
 };
@@ -23,7 +25,7 @@ export async function defaultValueProvider({
   creds,
   api,
 }: {
-  creds?: ConfigurationOptions;
+  creds?: AwsCredentialIdentity;
   api?: ParameterStoreApi;
 } = {}): Promise<ValueProvider> {
   const parameterStoreApi = api ?? (await parameterStoreApiFactory.getApi(creds));
