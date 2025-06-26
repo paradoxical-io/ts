@@ -45,8 +45,4 @@ module.exports = {
 
   // The test environment that will be used for testing
   testEnvironment: 'node',
-
-  // find snapshots co-located to ts files vs the dist files
-  // https://brunoscheufler.com/blog/2020-03-08-configuring-jest-snapshot-resolvers
-  snapshotResolver: process.env.CI ? `${CI_DATA.root}/packages/common-test/dist/jest/snapshotResolver.js` : undefined,
 };
