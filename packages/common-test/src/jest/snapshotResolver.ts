@@ -8,7 +8,7 @@ import path from 'path';
  * resolves from test to snapshot path
  * @param snapshotFile
  */
-export function resolveSnapshotPath(testFile: string, ext: string) {
+function resolveSnapshotPath(testFile: string, ext: string) {
   // Get directory of test source file
   const snapshotDir = path.dirname(testFile).replace('dist/', 'src/');
 
@@ -23,7 +23,7 @@ export function resolveSnapshotPath(testFile: string, ext: string) {
  * @param snapshotFile
  * @param ext
  */
-export function resolveTestPath(snapshotFile: string, ext: string): string {
+function resolveTestPath(snapshotFile: string, ext: string): string {
   const testDirectory = path.dirname(snapshotFile).replace('src/', 'dist/').replace('__snapshots__', '');
 
   const testFilename = path.basename(snapshotFile).replace('.ts', '.js').slice(0, -ext.length);
@@ -31,4 +31,10 @@ export function resolveTestPath(snapshotFile: string, ext: string): string {
   return path.join(testDirectory, testFilename);
 }
 
-export const testPathForConsistencyCheck = 'dist/jest/jest.test.js';
+const testPathForConsistencyCheck = 'dist/jest/jest.test.js';
+
+module.exports = {
+  resolveSnapshotPath,
+  resolveTestPath,
+  testPathForConsistencyCheck,
+};
