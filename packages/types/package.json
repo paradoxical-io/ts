@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/types",
-  "version": "1.0.9",
+  "version": "2.0.0",
   "description": "Paradox shared types",
   "files": [
     "dist/**/*.js",
