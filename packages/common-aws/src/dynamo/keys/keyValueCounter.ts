@@ -7,8 +7,8 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { Arrays, propertyOf } from '@paradoxical-io/common';
-import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
 import { log } from '@paradoxical-io/common-server';
+import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
 
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
@@ -82,10 +82,10 @@ export class KeyValueCounter {
   private readonly tableName: string;
 
   constructor({
-                namespace,
-                dynamo = new DynamoDBClient(),
-                tableName = dynamoTableName('keys'),
-              }: {
+    namespace,
+    dynamo = new DynamoDBClient(),
+    tableName = dynamoTableName('keys'),
+  }: {
     namespace: string;
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;

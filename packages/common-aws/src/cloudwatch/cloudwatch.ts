@@ -7,8 +7,8 @@ import {
   FilterLogEventsCommand,
   LogGroup,
 } from '@aws-sdk/client-cloudwatch-logs';
-import { Brand, EpochMS } from '@paradoxical-io/types';
 import { log } from '@paradoxical-io/common-server';
+import { Brand, EpochMS } from '@paradoxical-io/types';
 
 export type CloudwatchExportTaskId = Brand<'TaskId', string>;
 
@@ -24,12 +24,12 @@ export class CloudwatchManager {
    * @param to ending timestamp of logs to include
    */
   async createExportTask({
-                           s3Bucket,
-                           s3PathPrefix,
-                           logGroupName,
-                           from,
-                           to,
-                         }: {
+    s3Bucket,
+    s3PathPrefix,
+    logGroupName,
+    from,
+    to,
+  }: {
     s3Bucket: string;
     s3PathPrefix?: string;
     logGroupName: string;

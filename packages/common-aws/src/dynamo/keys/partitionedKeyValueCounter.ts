@@ -7,11 +7,11 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { Arrays, propertyOf } from '@paradoxical-io/common';
+import { log } from '@paradoxical-io/common-server';
 import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
-import { log } from '@paradoxical-io/common-server';
 
 export class PartitionedKeyCounterTableDao<T extends string = string> implements DynamoDao {
   @hashKey()
@@ -39,9 +39,9 @@ export class PartitionedKeyValueCounter {
   private readonly tableName: string;
 
   constructor({
-                dynamo = new DynamoDBClient(),
-                tableName = dynamoTableName('partitioned_keys'),
-              }: {
+    dynamo = new DynamoDBClient(),
+    tableName = dynamoTableName('partitioned_keys'),
+  }: {
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
   }) {

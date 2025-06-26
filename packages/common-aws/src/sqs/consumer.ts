@@ -547,10 +547,7 @@ export class FunctionalConsumerRaw<T> extends SQSConsumer<T> {
   }
 }
 
-export function newConsumer<T>(
-  method: (event: T) => Promise<MessageProcessorResult>,
-  config: SQSConfig
-) {
+export function newConsumer<T>(method: (event: T) => Promise<MessageProcessorResult>, config: SQSConfig) {
   return new FunctionalConsumer<T>(method, config.queueUrl, {
     maxNumberOfMessages: config.maxNumberOfMessages,
     proxyProvider: currentEnvironment() === 'prod' ? undefined : new DevProxyProvider(new PartitionedKeyValueTable()),

@@ -20,10 +20,10 @@ export class DynamoLock implements LockApi {
   private readonly timeProvider: TimeProvider;
 
   constructor({
-                dynamo = new DynamoDBClient(),
-                tableName = dynamoTableName('locks'),
-                timeProvider = defaultTimeProvider(),
-              }: {
+    dynamo = new DynamoDBClient(),
+    tableName = dynamoTableName('locks'),
+    timeProvider = defaultTimeProvider(),
+  }: {
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
     timeProvider?: TimeProvider;

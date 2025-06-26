@@ -55,10 +55,10 @@ export class KeyValueTable {
   private readonly tableName: string;
 
   constructor({
-                namespace = 'global',
-                dynamo = new DynamoDBClient(),
-                tableName = dynamoTableName('keys'),
-              }: {
+    namespace = 'global',
+    dynamo = new DynamoDBClient(),
+    tableName = dynamoTableName('keys'),
+  }: {
     namespace?: string;
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
@@ -122,10 +122,10 @@ export class KeyValueTable {
   }
 
   async listAll<K, V>({
-                        pageItem,
-                        limit,
-                        keyContains,
-                      }: {
+    pageItem,
+    limit,
+    keyContains,
+  }: {
     pageItem?: KeyValueTablePageItem;
     limit?: number;
     keyContains?: string;
@@ -136,10 +136,10 @@ export class KeyValueTable {
       FilterExpression: keyContains ? `contains(#key, :val)` : undefined,
       ExpressionAttributeValues: keyContains
         ? {
-          ':val': {
-            S: keyContains,
-          },
-        }
+            ':val': {
+              S: keyContains,
+            },
+          }
         : undefined,
       ExpressionAttributeNames: {
         '#key': 'key',

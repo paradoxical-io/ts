@@ -34,4 +34,3 @@ export async function newSqsDocker(): Promise<SQSDocker> {
 
   return new SQSDocker(container, sqs, base);
 }
-

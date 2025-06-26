@@ -53,9 +53,9 @@ export class PartitionedKeyValueTable {
   readonly tableName: string;
 
   constructor({
-                dynamo = new DynamoDBClient(),
-                tableName = dynamoTableName('partitioned_keys'),
-              }: {
+    dynamo = new DynamoDBClient(),
+    tableName = dynamoTableName('partitioned_keys'),
+  }: {
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
   } = {}) {
@@ -380,11 +380,11 @@ export class PartitionedKeyValueTable {
           [mappings.sortKeyFieldName]:
             mappings.sortKeyFieldAWSType === 'N'
               ? {
-                N: sortKey,
-              }
+                  N: sortKey,
+                }
               : {
-                S: sortKey,
-              },
+                  S: sortKey,
+                },
           [mappings.partitionKeyFieldName]: {
             S: this.partitionKey(key),
           },
@@ -441,11 +441,11 @@ export class PartitionedKeyValueTable {
           [mappings.sortKeyFieldName]:
             mappings.sortKeyFieldAWSType === 'N'
               ? {
-                N: sortKey,
-              }
+                  N: sortKey,
+                }
               : {
-                S: sortKey,
-              },
+                  S: sortKey,
+                },
           [mappings.dataFieldName]: {
             S: JSON.stringify(data),
           },
@@ -481,11 +481,11 @@ export class PartitionedKeyValueTable {
           [mappings.sortKeyFieldName]:
             mappings.sortKeyFieldAWSType === 'N'
               ? {
-                N: sortKey,
-              }
+                  N: sortKey,
+                }
               : {
-                S: sortKey,
-              },
+                  S: sortKey,
+                },
           [mappings.partitionKeyFieldName]: {
             S: this.partitionKey(key),
           },
@@ -521,11 +521,11 @@ export class PartitionedKeyValueTable {
                 [mappings.sortKeyFieldName]:
                   mappings.sortKeyFieldAWSType === 'N'
                     ? {
-                      N: this.sortKey(item.key),
-                    }
+                        N: this.sortKey(item.key),
+                      }
                     : {
-                      S: this.sortKey(item.key),
-                    },
+                        S: this.sortKey(item.key),
+                      },
                 [mappings.dataFieldName]: {
                   S: JSON.stringify(item.data),
                 },
@@ -557,11 +557,11 @@ export class PartitionedKeyValueTable {
         ':sort':
           mappings.sortKeyFieldAWSType === 'N'
             ? {
-              N: sortKey,
-            }
+                N: sortKey,
+              }
             : {
-              S: sortKey,
-            },
+                S: sortKey,
+              },
       },
       ConditionExpression: `attribute_not_exists(#key) OR (#sort <> :sort AND #key <> :key)`,
       Item: {
@@ -571,11 +571,11 @@ export class PartitionedKeyValueTable {
         [mappings.sortKeyFieldName]:
           mappings.sortKeyFieldAWSType === 'N'
             ? {
-              N: sortKey,
-            }
+                N: sortKey,
+              }
             : {
-              S: sortKey,
-            },
+                S: sortKey,
+              },
         [mappings.dataFieldName]: {
           S: JSON.stringify(data),
         },
@@ -599,11 +599,11 @@ export class PartitionedKeyValueTable {
         [mappings.sortKeyFieldName]:
           mappings.sortKeyFieldAWSType === 'N'
             ? {
-              N: sortKey,
-            }
+                N: sortKey,
+              }
             : {
-              S: sortKey,
-            },
+                S: sortKey,
+              },
       },
     });
 
@@ -633,11 +633,11 @@ export class PartitionedKeyValueTable {
                   [mappings.sortKeyFieldName]:
                     mappings.sortKeyFieldAWSType === 'N'
                       ? {
-                        N: item.key,
-                      }
+                          N: item.key,
+                        }
                       : {
-                        S: item.key,
-                      },
+                          S: item.key,
+                        },
                 },
               },
             })),

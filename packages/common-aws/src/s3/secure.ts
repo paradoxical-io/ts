@@ -13,7 +13,8 @@ import {
 import {
   EncryptDecrypt,
   EncryptedData,
-  EncryptionParams, log,
+  EncryptionParams,
+  log,
   Secret,
   SecureStore,
   SecureVersion,
@@ -61,12 +62,12 @@ export class S3SecureStore implements SecureStore {
   private readonly kms: KMSClient;
 
   constructor({
-                kms = new KMSClient(),
-                kmsKeyID,
-                s3 = new S3Client(),
-                s3Bucket,
-                crypto = new EncryptDecrypt(),
-              }: {
+    kms = new KMSClient(),
+    kmsKeyID,
+    s3 = new S3Client(),
+    s3Bucket,
+    crypto = new EncryptDecrypt(),
+  }: {
     kms?: KMSClient;
     kmsKeyID: string;
     s3?: S3Client;
