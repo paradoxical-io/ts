@@ -1,14 +1,16 @@
+import {
+  ApiGatewayManagementApiClient,
+  GoneException,
+  PostToConnectionCommand,
+} from '@aws-sdk/client-apigatewaymanagementapi';
 import { log } from '@paradoxical-io/common-server';
-import AWS from 'aws-sdk';
-
-import { awsRethrow } from '../errors';
 
 export class ApiGatewayWebsocket {
-  constructor(private api: AWS.ApiGatewayManagementApi = new AWS.ApiGatewayManagementApi()) {}
+  constructor(private api: ApiGatewayManagementApiClient = new ApiGatewayManagementApiClient()) {}
 
   static createEndpoint(endpoint: string): ApiGatewayWebsocket {
     return new ApiGatewayWebsocket(
-      new AWS.ApiGatewayManagementApi({
+      new ApiGatewayManagementApiClient({
         endpoint: endpoint.replace('wss', 'https'),
       })
     );
@@ -21,16 +23,15 @@ export class ApiGatewayWebsocket {
    */
   async publish<T>(connectionId: string, message: T): Promise<boolean> {
     try {
-      await this.api
-        .postToConnection({
-          ConnectionId: connectionId,
-          Data: JSON.stringify(message),
-        })
-        .promise()
-        .catch(awsRethrow(`failed writing to connection id ${connectionId}`));
+      const command = new PostToConnectionCommand({
+        ConnectionId: connectionId,
+        Data: JSON.stringify(message),
+      });
+
+      await this.api.send(command);
     } catch (e) {
       // GoneException
-      if ((e as AWS.AWSError).statusCode === 410) {
+      if (e instanceof GoneException) {
         // this indicates the connection is gone and is ok to swallow
         return false;
       }

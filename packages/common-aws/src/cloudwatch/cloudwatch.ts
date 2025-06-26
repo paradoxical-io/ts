@@ -1,13 +1,19 @@
-import Cloudwatch = require('aws-sdk/clients/cloudwatchlogs');
+import {
+  CloudWatchLogsClient,
+  CreateExportTaskCommand,
+  DescribeExportTasksCommand,
+  DescribeLogGroupsCommand,
+  ExportTask,
+  FilterLogEventsCommand,
+  LogGroup,
+} from '@aws-sdk/client-cloudwatch-logs';
 import { log } from '@paradoxical-io/common-server';
 import { Brand, EpochMS } from '@paradoxical-io/types';
-
-import { awsRethrow } from '../errors';
 
 export type CloudwatchExportTaskId = Brand<'TaskId', string>;
 
 export class CloudwatchManager {
-  constructor(private cloudwatch: Cloudwatch = new Cloudwatch()) {}
+  constructor(private cloudwatch: CloudWatchLogsClient = new CloudWatchLogsClient()) {}
 
   /**
    * Create a new task to export a log group to an S3 bucket.
@@ -37,27 +43,25 @@ export class CloudwatchManager {
      * if we don't, do nothing otherwise we'll get an exception when calling
      * createExportTask(...)
      */
-    const logEvents = await this.cloudwatch
-      .filterLogEvents({
-        endTime: to,
-        limit: 1,
-        logGroupName,
-        startTime: from,
-      })
-      .promise()
-      .catch(awsRethrow());
+    const filterLogEventsCommand = new FilterLogEventsCommand({
+      endTime: to,
+      limit: 1,
+      logGroupName,
+      startTime: from,
+    });
+
+    const logEvents = await this.cloudwatch.send(filterLogEventsCommand);
 
     if ((logEvents.events ?? []).length > 0) {
-      const { taskId } = await this.cloudwatch
-        .createExportTask({
-          destination: s3Bucket,
-          destinationPrefix: s3PathPrefix,
-          logGroupName,
-          from,
-          to,
-        })
-        .promise()
-        .catch(awsRethrow());
+      const createExportTaskCommand = new CreateExportTaskCommand({
+        destination: s3Bucket,
+        destinationPrefix: s3PathPrefix,
+        logGroupName,
+        from,
+        to,
+      });
+
+      const { taskId } = await this.cloudwatch.send(createExportTaskCommand);
 
       return taskId as CloudwatchExportTaskId;
     }
@@ -71,13 +75,12 @@ export class CloudwatchManager {
    * Get details about a known cloudwatch export task
    * @param taskId
    */
-  async describeExportTask(taskId: CloudwatchExportTaskId): Promise<Cloudwatch.ExportTask | undefined> {
-    const { exportTasks } = await this.cloudwatch
-      .describeExportTasks({
-        taskId,
-      })
-      .promise()
-      .catch(awsRethrow());
+  async describeExportTask(taskId: CloudwatchExportTaskId): Promise<ExportTask | undefined> {
+    const command = new DescribeExportTasksCommand({
+      taskId,
+    });
+
+    const { exportTasks } = await this.cloudwatch.send(command);
 
     if ((exportTasks ?? []).length > 0) {
       return exportTasks![0];
@@ -86,14 +89,13 @@ export class CloudwatchManager {
     return undefined;
   }
 
-  async getLogGroups(): Promise<Cloudwatch.LogGroups> {
-    const { logGroups } = await this.cloudwatch
-      .describeLogGroups({
-        // default limit set by SDK
-        limit: 50,
-      })
-      .promise()
-      .catch(awsRethrow());
+  async getLogGroups(): Promise<LogGroup[]> {
+    const command = new DescribeLogGroupsCommand({
+      // default limit set by SDK
+      limit: 50,
+    });
+
+    const { logGroups } = await this.cloudwatch.send(command);
 
     return logGroups ?? [];
   }

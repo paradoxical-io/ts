@@ -1,18 +1,15 @@
+import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import { Docker, newDocker } from '@paradoxical-io/common-server/dist/test/docker';
-import AWS from 'aws-sdk';
-
-import { awsRethrow } from '../errors';
 
 export class S3Docker {
-  constructor(public container: Docker, public s3: AWS.S3) {}
+  constructor(public container: Docker, public s3: S3Client) {}
 
   async newBucket(bucket = 'default') {
-    await this.s3
-      .createBucket({
-        Bucket: bucket,
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new CreateBucketCommand({
+      Bucket: bucket,
+    });
+
+    await this.s3.send(command);
   }
 }
 
@@ -26,9 +23,9 @@ export async function newS3Docker(): Promise<S3Docker> {
 
   const base = `http://localhost:${container.mapping[4569]}`;
 
-  const s3 = new AWS.S3({
+  const s3 = new S3Client({
     endpoint: base,
-    s3ForcePathStyle: true,
+    forcePathStyle: true,
     region: 'us-west-2',
   });
 

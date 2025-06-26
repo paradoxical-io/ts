@@ -1,26 +1,30 @@
 import { attribute, hashKey } from '@aws/dynamodb-data-mapper-annotations';
+import {
+  ConditionalCheckFailedException,
+  DeleteItemCommand,
+  DynamoDBClient,
+  UpdateItemCommand,
+} from '@aws-sdk/client-dynamodb';
 import { defaultTimeProvider, propertiesOf, TimeProvider, toEpochSeconds } from '@paradoxical-io/common';
 import { Lock, LockApi, log } from '@paradoxical-io/common-server';
 import { EpochSeconds } from '@paradoxical-io/types';
-import AWS, { DynamoDB } from 'aws-sdk';
 
-import { awsRethrow, hasAWSErrorCode } from '../errors';
 import { DynamoDao } from './mapper';
 import { DynamoTableName, dynamoTableName } from './util';
 
 export class DynamoLock implements LockApi {
-  private dynamo: AWS.DynamoDB;
+  private readonly dynamo: DynamoDBClient;
 
-  private tableName: string;
+  private readonly tableName: string;
 
-  private timeProvider: TimeProvider;
+  private readonly timeProvider: TimeProvider;
 
   constructor({
-    dynamo = new AWS.DynamoDB(),
+    dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('locks'),
     timeProvider = defaultTimeProvider(),
   }: {
-    dynamo?: AWS.DynamoDB;
+    dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
     timeProvider?: TimeProvider;
   } = {}) {
@@ -44,36 +48,35 @@ export class DynamoLock implements LockApi {
 
     const keys = propertiesOf<DynamoLockEntry>();
     try {
-      const old = await this.dynamo
-        .updateItem({
-          TableName: this.tableName,
-          ReturnValues: 'UPDATED_OLD',
-          Key: {
-            key: {
-              S: key,
-            },
+      const command = new UpdateItemCommand({
+        TableName: this.tableName,
+        ReturnValues: 'UPDATED_OLD',
+        Key: {
+          key: {
+            S: key,
           },
-          UpdateExpression: 'set #expires_at = :expires_at',
-          ConditionExpression: `attribute_not_exists(#key) OR :now >= #expires_at`,
-          ExpressionAttributeNames: {
-            '#key': keys('key'),
-            '#expires_at': keys('expiresAt'),
+        },
+        UpdateExpression: 'set #expires_at = :expires_at',
+        ConditionExpression: `attribute_not_exists(#key) OR :now >= #expires_at`,
+        ExpressionAttributeNames: {
+          '#key': keys('key'),
+          '#expires_at': keys('expiresAt'),
+        },
+        ExpressionAttributeValues: {
+          ':expires_at': {
+            N: payload.expiresAt.toString(),
           },
-          ExpressionAttributeValues: {
-            ':expires_at': {
-              N: payload.expiresAt.toString(),
-            },
-            ':now': {
-              N: nowEpochSeconds.toString(),
-            },
+          ':now': {
+            N: nowEpochSeconds.toString(),
           },
-        } as DynamoDB.Types.UpdateItemInput)
-        .promise()
-        .catch(awsRethrow());
+        },
+      });
+
+      const old = await this.dynamo.send(command);
 
       let expired = '';
       if (old.Attributes) {
-        expired = `because previous lock expired at ${old.Attributes['expiresAt'].N}`;
+        expired = `because previous lock expired at ${old.Attributes['expiresAt']!.N}`;
       }
 
       log.info(
@@ -83,23 +86,22 @@ export class DynamoLock implements LockApi {
       return {
         type: 'lock',
         release: async (): Promise<void> => {
-          await this.dynamo
-            .deleteItem({
-              TableName: this.tableName,
-              Key: {
-                key: {
-                  S: key,
-                },
+          const deleteItemCommand = new DeleteItemCommand({
+            TableName: this.tableName,
+            Key: {
+              key: {
+                S: key,
               },
-            })
-            .promise()
-            .catch(awsRethrow());
+            },
+          });
+
+          await this.dynamo.send(deleteItemCommand);
 
           log.info(`Released lock id: ${key}`);
         },
       };
     } catch (e) {
-      if (hasAWSErrorCode(e) && e.code === 'ConditionalCheckFailedException') {
+      if (e instanceof ConditionalCheckFailedException) {
         log.info(`Cannot acquire lock id: ${key}, it is still held`);
 
         return undefined;

@@ -1,7 +1,6 @@
 export * from './cloudfront';
 export * from './cloudwatch';
 export * from './dynamo';
-export * from './errors';
 export * from './gateway/apiGatewayWebsocket';
 export * from './lambda/metrics';
 export * from './parameter-store';

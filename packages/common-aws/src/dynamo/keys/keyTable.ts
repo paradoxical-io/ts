@@ -1,10 +1,18 @@
-import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey } from '@aws/dynamodb-data-mapper-annotations';
-import { Arrays, propertyOf, sleep } from '@paradoxical-io/common';
-import { asBrandSafe, Brand, Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
-import AWS from 'aws-sdk';
+import {
+  AttributeValue,
+  BatchGetItemCommand,
+  DeleteItemCommand,
+  DynamoDBClient,
+  PutItemCommand,
+  ResourceNotFoundException,
+  ScanCommand,
+  ScanCommandInput,
+} from '@aws-sdk/client-dynamodb';
+import { Arrays, asBrandSafe, propertyOf, sleep } from '@paradoxical-io/common';
+import { log } from '@paradoxical-io/common-server';
+import { Brand, Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
 
-import { awsRethrow } from '../../errors';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
 
@@ -15,7 +23,9 @@ export interface KeyValueList<T> {
   pagePointer?: KeyValueTablePageItem;
 }
 
-export type KeyValueTablePageItem = Brand<AWS.DynamoDB.Key, 'KeyValueTablePageItem'>;
+export type DynamoKey = Record<string, AttributeValue>;
+
+export type KeyValueTablePageItem = Brand<DynamoKey, 'KeyValueTablePageItem'>;
 
 export class KeyValueTableDao implements DynamoDao {
   @hashKey()
@@ -38,7 +48,7 @@ export class KeyValueTableDao implements DynamoDao {
  * If you are unsure which to use, prefer the partition table and NOT this table.
  */
 export class KeyValueTable {
-  private readonly dynamo: AWS.DynamoDB;
+  private readonly dynamo: DynamoDBClient;
 
   private readonly namespace: string;
 
@@ -46,11 +56,11 @@ export class KeyValueTable {
 
   constructor({
     namespace = 'global',
-    dynamo = new AWS.DynamoDB(),
+    dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('keys'),
   }: {
     namespace?: string;
-    dynamo?: AWS.DynamoDB;
+    dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
   } = {}) {
     assertTableNameValid(tableName);
@@ -66,7 +76,7 @@ export class KeyValueTable {
     try {
       return await this.getRaw<T>(this.key(id));
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return undefined;
       }
 
@@ -120,15 +130,17 @@ export class KeyValueTable {
     limit?: number;
     keyContains?: string;
   } = {}): Promise<KeyValueList<[K, V]> | undefined> {
-    const scan: AWS.DynamoDB.Types.ScanInput = {
+    const scan: ScanCommandInput = {
       TableName: this.tableName,
       Limit: limit ?? 1000,
       FilterExpression: keyContains ? `contains(#key, :val)` : undefined,
-      ExpressionAttributeValues: {
-        ':val': {
-          S: keyContains,
-        },
-      },
+      ExpressionAttributeValues: keyContains
+        ? {
+            ':val': {
+              S: keyContains,
+            },
+          }
+        : undefined,
       ExpressionAttributeNames: {
         '#key': 'key',
       },
@@ -138,22 +150,27 @@ export class KeyValueTable {
       scan.ExclusiveStartKey = pageItem;
     }
 
-    const result = await this.dynamo
-      .scan(scan)
-      .promise()
-      .catch(awsRethrow(`${pageItem}`));
+    try {
+      const command = new ScanCommand(scan);
 
-    if (result) {
-      const data: Array<[K, V]> | undefined = result.Items?.map(i => [i['key'].S, i['data'].S])
-        .filter(kv => notNullOrUndefined(kv[1]) && notNullOrUndefined(kv[0]))
-        .map(kv => [kv[0] as unknown as K, JSON.parse(kv[1]!) as V]);
+      const result = await this.dynamo.send(command);
 
-      if (data) {
-        return {
-          items: data,
-          pagePointer: asBrandSafe(result.LastEvaluatedKey),
-        };
+      if (result) {
+        const data: Array<[K, V]> | undefined = result.Items?.map(i => [i['key']?.S, i['data']?.S])
+          .filter(kv => notNullOrUndefined(kv[1]) && notNullOrUndefined(kv[0]))
+          .map(kv => [kv[0] as unknown as K, JSON.parse(kv[1]!) as V]);
+
+        if (data) {
+          return {
+            items: data,
+            pagePointer: asBrandSafe(result.LastEvaluatedKey),
+          };
+        }
       }
+    } catch (e) {
+      log.error(`Failed to scan ${pageItem}`, e);
+
+      throw e;
     }
 
     return undefined;
@@ -187,29 +204,34 @@ export class KeyValueTable {
     const results: T[] = [];
 
     for (const group of groups) {
-      const result = await this.dynamo
-        .batchGetItem({
-          RequestItems: {
-            [this.tableName]: {
-              Keys: group.map(i => ({
-                [propertyOf<KeyValueTableDao>('key')]: {
-                  S: i,
-                },
-              })),
-            },
+      const command = new BatchGetItemCommand({
+        RequestItems: {
+          [this.tableName]: {
+            Keys: group.map(i => ({
+              [propertyOf<KeyValueTableDao>('key')]: {
+                S: i,
+              },
+            })),
           },
-        })
-        .promise()
-        .catch(awsRethrow(id.join(',')));
+        },
+      });
 
-      if (result) {
-        const data = result.Responses?.[this.tableName]
-          ?.map(i => i[propertyOf<KeyValueTableDao>('data')]?.S)
-          .filter(notNullOrUndefined);
+      try {
+        const result = await this.dynamo.send(command);
 
-        if (data) {
-          results.push(...data.map(d => JSON.parse(d) as T));
+        if (result) {
+          const data = result.Responses?.[this.tableName]
+            ?.map(i => i[propertyOf<KeyValueTableDao>('data')]?.S)
+            .filter(notNullOrUndefined);
+
+          if (data) {
+            results.push(...data.map(d => JSON.parse(d) as T));
+          }
         }
+      } catch (e) {
+        log.error(`Failed to get batch ${id.join(',')}`, e);
+
+        throw e;
       }
     }
 
@@ -217,33 +239,43 @@ export class KeyValueTable {
   }
 
   private async setRaw(data: KeyValueTableDao): Promise<void> {
-    await this.dynamo
-      .putItem({
-        TableName: this.tableName,
-        Item: {
-          [propertyOf<KeyValueTableDao>('key')]: {
-            S: data.key,
-          },
-          [propertyOf<KeyValueTableDao>('data')]: {
-            S: data.data,
-          },
+    const command = new PutItemCommand({
+      TableName: this.tableName,
+      Item: {
+        [propertyOf<KeyValueTableDao>('key')]: {
+          S: data.key,
         },
-      })
-      .promise()
-      .catch(awsRethrow(data.key));
+        [propertyOf<KeyValueTableDao>('data')]: {
+          S: data.data,
+        },
+      },
+    });
+
+    try {
+      await this.dynamo.send(command);
+    } catch (e) {
+      log.error(`Failed to set item ${data.key}`, e);
+
+      throw e;
+    }
   }
 
   private async deleteRaw(id: KeyValueNamespace): Promise<void> {
-    await this.dynamo
-      .deleteItem({
-        TableName: this.tableName,
-        Key: {
-          [propertyOf<KeyValueTableDao>('key')]: {
-            S: id,
-          },
+    const command = new DeleteItemCommand({
+      TableName: this.tableName,
+      Key: {
+        [propertyOf<KeyValueTableDao>('key')]: {
+          S: id,
         },
-      })
-      .promise()
-      .catch(awsRethrow(id));
+      },
+    });
+
+    try {
+      await this.dynamo.send(command);
+    } catch (e) {
+      log.error(`Failed to delete item ${id}`, e);
+
+      throw e;
+    }
   }
 }

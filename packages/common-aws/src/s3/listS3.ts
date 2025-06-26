@@ -1,21 +1,19 @@
+import { ListObjectsCommand, ListObjectsCommandInput, S3Client } from '@aws-sdk/client-s3';
+
 /**
- * Streams all users as an async generator
+ * Streams all objects as an async generator
  * @param cognito
  * @param pool
  */
-
-import AWS from 'aws-sdk';
-import { ListObjectsRequest } from 'aws-sdk/clients/s3';
-
-import { awsRethrow } from '../errors';
-
-export async function* getAllObjects(params: ListObjectsRequest, s3: AWS.S3 = new AWS.S3()): AsyncGenerator<string> {
+export async function* getAllObjects(
+  params: ListObjectsCommandInput,
+  s3: S3Client = new S3Client()
+): AsyncGenerator<string> {
   let marker: string | undefined = params.Marker;
   while (true) {
-    const items = await s3
-      .listObjects({ ...params, Marker: marker })
-      .promise()
-      .catch(awsRethrow());
+    const command = new ListObjectsCommand({ ...params, Marker: marker });
+
+    const items = await s3.send(command);
 
     if (items.Contents) {
       for (const content of items.Contents) {
@@ -26,7 +24,7 @@ export async function* getAllObjects(params: ListObjectsRequest, s3: AWS.S3 = ne
     }
 
     if (items.IsTruncated && items.Contents) {
-      marker = items.Contents[items.Contents.length - 1].Key;
+      marker = items.Contents[items.Contents.length - 1]!.Key;
     } else {
       return;
     }

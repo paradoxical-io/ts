@@ -1,11 +1,12 @@
-import AWS from 'aws-sdk';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import fs from 'fs';
+import { Readable } from 'stream';
 
 export async function downloadObject({
   bucket,
   filePath,
   objectKey,
-  s3 = new AWS.S3(),
+  s3 = new S3Client(),
 }: {
   /**
    * S3 bucket where object is located
@@ -25,17 +26,21 @@ export async function downloadObject({
   /**
    * S3 instance
    */
-  s3?: AWS.S3;
+  s3?: S3Client;
 }): Promise<boolean> {
   const file = fs.createWriteStream(filePath);
 
-  const s3Object = await s3.getObject({ Bucket: bucket, Key: objectKey });
+  const command = new GetObjectCommand({ Bucket: bucket, Key: objectKey });
 
-  return new Promise((resolve, reject) => {
-    s3Object
-      .createReadStream()
-      .on('end', () => resolve(true))
-      .on('error', error => reject(error))
-      .pipe(file);
-  });
+  const { Body } = await s3.send(command);
+
+  if (Body instanceof Readable) {
+    return new Promise((resolve, reject) => {
+      Body.on('end', () => resolve(true))
+        .on('error', error => reject(error))
+        .pipe(file);
+    });
+  }
+
+  return false;
 }

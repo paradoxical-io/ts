@@ -1,10 +1,15 @@
-import { ItemNotFoundException } from '@aws/dynamodb-data-mapper';
 import { attribute, hashKey } from '@aws/dynamodb-data-mapper-annotations';
+import {
+  BatchGetItemCommand,
+  DeleteItemCommand,
+  DynamoDBClient,
+  ResourceNotFoundException,
+  UpdateItemCommand,
+} from '@aws-sdk/client-dynamodb';
 import { Arrays, propertyOf } from '@paradoxical-io/common';
+import { log } from '@paradoxical-io/common-server';
 import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
-import AWS from 'aws-sdk';
 
-import { awsRethrow } from '../../errors';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
 
@@ -54,7 +59,7 @@ export class KeyValueScopedCounter<K extends string> {
     const id = this.key(key);
     const [result] = await this.counter.get([id]);
 
-    return notNullOrUndefined(result?.count) ? result.count : 0;
+    return notNullOrUndefined(result) && notNullOrUndefined(result?.count) ? result.count : 0;
   }
 
   async inc(key: K, by = 1): Promise<number> {
@@ -70,7 +75,7 @@ export class KeyValueScopedCounter<K extends string> {
  * An atomic key value counter
  */
 export class KeyValueCounter {
-  private readonly dynamo: AWS.DynamoDB;
+  private readonly dynamo: DynamoDBClient;
 
   private readonly namespace: string;
 
@@ -78,11 +83,11 @@ export class KeyValueCounter {
 
   constructor({
     namespace,
-    dynamo = new AWS.DynamoDB(),
+    dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('keys'),
   }: {
     namespace: string;
-    dynamo?: AWS.DynamoDB;
+    dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
   }) {
     assertTableNameValid(tableName);
@@ -117,7 +122,7 @@ export class KeyValueCounter {
 
       return results;
     } catch (e) {
-      if ((e as ItemNotFoundException).name === 'ItemNotFoundException') {
+      if (e instanceof ResourceNotFoundException) {
         return [];
       }
 
@@ -154,25 +159,24 @@ export class KeyValueCounter {
     }
 
     const promises = Arrays.grouped(id, 100).map(async idGroup => {
-      const result = await this.dynamo
-        .batchGetItem({
-          RequestItems: {
-            [this.tableName]: {
-              Keys: idGroup.map(key => ({
-                [propertyOf<KeyValueCountTableDao>('key')]: {
-                  S: key,
-                },
-              })),
-            },
+      const command = new BatchGetItemCommand({
+        RequestItems: {
+          [this.tableName]: {
+            Keys: idGroup.map(key => ({
+              [propertyOf<KeyValueCountTableDao>('key')]: {
+                S: key,
+              },
+            })),
           },
-        })
-        .promise()
-        .catch(awsRethrow());
+        },
+      });
+
+      const result = await this.dynamo.send(command);
 
       if (result?.Responses) {
-        return result.Responses[this.tableName].map(result => {
+        return result.Responses[this.tableName]!.map(result => {
           const item: KeyCount<K> = {
-            id: result[propertyOf<KeyValueCountTableDao>('key')].S!.toString() as K,
+            id: result[propertyOf<KeyValueCountTableDao>('key')]!.S!.toString() as K,
             count: Number(result[propertyOf<KeyValueCountTableDao>('count')]?.N ?? 0),
           };
 
@@ -189,42 +193,52 @@ export class KeyValueCounter {
   }
 
   private async incrRaw(data: KeyValueCountTableDao): Promise<number> {
-    const result = await this.dynamo
-      .updateItem({
-        TableName: this.tableName,
-        Key: {
-          [propertyOf<KeyValueCountTableDao>('key')]: {
-            S: data.key,
-          },
+    const command = new UpdateItemCommand({
+      TableName: this.tableName,
+      Key: {
+        [propertyOf<KeyValueCountTableDao>('key')]: {
+          S: data.key,
         },
-        UpdateExpression: 'add #count :value',
-        ExpressionAttributeNames: {
-          '#count': propertyOf<KeyValueCountTableDao>('count'),
+      },
+      UpdateExpression: 'add #count :value',
+      ExpressionAttributeNames: {
+        '#count': propertyOf<KeyValueCountTableDao>('count'),
+      },
+      ExpressionAttributeValues: {
+        ':value': {
+          N: data.count.toString(),
         },
-        ExpressionAttributeValues: {
-          ':value': {
-            N: data.count.toString(),
-          },
-        },
-        ReturnValues: 'UPDATED_NEW',
-      })
-      .promise()
-      .catch(awsRethrow(data.key));
+      },
+      ReturnValues: 'UPDATED_NEW',
+    });
 
-    return Number(result.Attributes![propertyOf<KeyValueCountTableDao>('count')].N);
+    try {
+      const result = await this.dynamo.send(command);
+
+      return Number(result.Attributes![propertyOf<KeyValueCountTableDao>('count')]!.N);
+    } catch (e) {
+      log.error(`Failed to increment ${data.key}`, e);
+
+      throw e;
+    }
   }
 
   private async deleteRaw(id: KeyValueNamespace): Promise<void> {
-    await this.dynamo
-      .deleteItem({
-        TableName: this.tableName,
-        Key: {
-          [propertyOf<KeyValueCountTableDao>('key')]: {
-            S: id,
-          },
+    const command = new DeleteItemCommand({
+      TableName: this.tableName,
+      Key: {
+        [propertyOf<KeyValueCountTableDao>('key')]: {
+          S: id,
         },
-      })
-      .promise()
-      .catch(awsRethrow(id));
+      },
+    });
+
+    try {
+      await this.dynamo.send(command);
+    } catch (e) {
+      log.error(`Failed to delete ${id}`, e);
+
+      throw e;
+    }
   }
 }

@@ -1,13 +1,19 @@
+import {
+  DescribeParametersCommand,
+  GetParameterCommand,
+  GetParametersCommand,
+  ParameterNotFound,
+  PutParameterCommand,
+  SSMClient,
+} from '@aws-sdk/client-ssm';
 import { Arrays, Limiter } from '@paradoxical-io/common';
 import { log, retry as autoRetry } from '@paradoxical-io/common-server';
 import { ErrorCode, ErrorWithCode, isErrorWithCode } from '@paradoxical-io/types';
-import * as SSM from 'aws-sdk/clients/ssm';
 
-import { awsRethrow, hasAWSErrorCode } from '../../errors';
 import retry = require('async-retry');
 
 export class ParameterStoreApi {
-  constructor(private ssm: SSM) {}
+  constructor(private ssm: SSMClient) {}
 
   async listParameters(): Promise<string[]> {
     const params: string[] = [];
@@ -15,12 +21,11 @@ export class ParameterStoreApi {
     let nextToken: string | undefined;
 
     do {
-      const described = await this.ssm
-        .describeParameters({
-          NextToken: nextToken,
-        })
-        .promise()
-        .catch(awsRethrow());
+      const command = new DescribeParametersCommand({
+        NextToken: nextToken,
+      });
+
+      const described = await this.ssm.send(command);
 
       if (described.Parameters) {
         Array.from(described.Parameters.values())
@@ -46,13 +51,12 @@ export class ParameterStoreApi {
 
     const groupPromises = Arrays.grouped(keys, 10).map(chunk =>
       limiter.wrap(async () => {
-        const response = await this.ssm
-          .getParameters({
-            Names: chunk,
-            WithDecryption: true,
-          })
-          .promise()
-          .catch(awsRethrow());
+        const command = new GetParametersCommand({
+          Names: chunk,
+          WithDecryption: true,
+        });
+
+        const response = await this.ssm.send(command);
 
         response.Parameters?.forEach(p => {
           if (p.Name && p.Value) {
@@ -80,13 +84,12 @@ export class ParameterStoreApi {
     return retry(
       async bail => {
         try {
-          const response = await this.ssm
-            .getParameter({
-              Name: name,
-              WithDecryption: withDecrypt,
-            })
-            .promise()
-            .catch(awsRethrow());
+          const command = new GetParameterCommand({
+            Name: name,
+            WithDecryption: withDecrypt,
+          });
+
+          const response = await this.ssm.send(command);
 
           const param = response.Parameter;
 
@@ -96,7 +99,7 @@ export class ParameterStoreApi {
 
           return '';
         } catch (err) {
-          if (hasAWSErrorCode(err) && err.code && err.code === 'ParameterNotFound') {
+          if (err instanceof ParameterNotFound) {
             bail(
               new ErrorWithCode(ErrorCode.ItemNotFound, {
                 data: { parameter: name },
@@ -142,14 +145,13 @@ export class ParameterStoreApi {
    * @param encrypt Whether or not to encrypt the value.
    */
   async setParameter(name: string, value: string, encrypt: boolean): Promise<void> {
-    await this.ssm
-      .putParameter({
-        Name: name,
-        Value: value,
-        Overwrite: true,
-        Type: encrypt ? 'SecureString' : 'String',
-      })
-      .promise()
-      .catch(awsRethrow());
+    const command = new PutParameterCommand({
+      Name: name,
+      Value: value,
+      Overwrite: true,
+      Type: encrypt ? 'SecureString' : 'String',
+    });
+
+    await this.ssm.send(command);
   }
 }
