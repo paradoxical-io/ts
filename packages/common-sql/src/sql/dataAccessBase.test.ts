@@ -6,7 +6,7 @@ import { ColumnNames, CrudBase } from './crudBase';
 import { SqlDataAccessBase } from './dataAccessBase';
 import { getColumnNameFunction } from './typeorm/queryBuilderHelpers';
 import { JsonTransformer } from './typeorm/transformers/jsonTransformer';
-import { xpath } from './typeorm/xpathBuilder';
+import { xpath } from '@paradoxical-io/common';
 
 @Entity({ name: 'test' })
 class TestModel extends CrudBase {

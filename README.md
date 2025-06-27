@@ -19,7 +19,7 @@ A sample of some things we support
   - [sqs](packages/common-aws/src/sqs) - batch and single publishers with tracing built in, simple function based consumers that retry, have metrics, configurable batching, synchronized application shutdown (finish processing when signal raised, etc)
   - [s3](packages/common-aws/src/s3) - async generator streaming of s3 buckets and [envelope encryption](packages/common-aws/src/s3/secure.ts)
   - [api gateway](packages/common-aws/src/gateway) - websocket publishing support
-- [TypeORM tooling](packages/common-sql/src) to create in memory tests, [unified type entities](packages/common-sql/src/sql/crudBase.ts), [JSON serialization](packages/common-sql/src/sql/typeorm/transformers), generally accepted [accounting principle decorators](packages/common-sql/src/sql/typeorm/money.ts), [XPATH](packages/common-sql/src/sql/typeorm/xpathBuilder.ts) query support, timing and metrics, etc
+- [TypeORM tooling](packages/common-sql/src) to create in memory tests, [unified type entities](packages/common-sql/src/sql/crudBase.ts), [JSON serialization](packages/common-sql/src/sql/typeorm/transformers), generally accepted [accounting principle decorators](packages/common-sql/src/sql/typeorm/money.ts), [XPATH](packages/common/src/xpath/xpathBuilder.ts) query support, timing and metrics, etc
 - Simple and useable [branded types](packages/types/src/brands.ts) as well as type utilities such as [exhaustiveness checking](packages/types/src/exhaustiveness.ts) and [extraction functions](packages/types/src/util.ts)
 - Strongly typed [Jest expectations](packages/common-test/src/jest/index.ts) for compile time support on `expect`
   - automatic type-safe of mocking of objects via `mock<T>()`

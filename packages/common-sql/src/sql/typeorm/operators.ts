@@ -1,3 +1,4 @@
+import { XPath } from '@paradoxical-io/common';
 import {
   ConnectionOptions,
   FindOperator,
@@ -15,7 +16,6 @@ import { RawSqlResultsToEntityTransformer } from 'typeorm/query-builder/transfor
 import { DateUtils } from 'typeorm/util/DateUtils';
 
 import { ColumnName } from './queryBuilderHelpers';
-import { XPath } from './xpathBuilder';
 
 export class CustomOperators {
   constructor(private driver: ConnectionOptions) {}
