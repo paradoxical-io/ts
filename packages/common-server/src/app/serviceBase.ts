@@ -30,6 +30,8 @@ export abstract class ServiceBase {
   abstract name: string;
 
   constructor() {
+    signals.enable()
+
     process.on('uncaughtException', (error: Error) => {
       log.error('uncaught exception. exiting', error);
 

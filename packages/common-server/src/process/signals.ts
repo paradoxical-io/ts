@@ -3,7 +3,11 @@ import { log } from '../logger';
 class Signals {
   private shutdownThunks: Array<() => Promise<void>> = [];
 
-  constructor() {
+  /**
+   * Enables shutdown handling for the process. If this is not called
+   * the process will not handle SIGTERM or SIGINT signals.
+   */
+  public enable() {
     process.once('SIGTERM', async () => {
       log.warn('Termination requested');
 
