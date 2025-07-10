@@ -9,12 +9,10 @@ export class BottomException extends Error {}
  * @param message The bottom value
  * @param onNever If the bottom is actually executed an action response that can optionally return a default value
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function bottom<T = never>(message: never, onNever?: (value: never) => T): T | never {
   if (!onNever) {
     throw new BottomException(`bottom hit: ${JSON.stringify(message)}`);
   } else {
-    // @ts-ignore
     return onNever(message)
   }
 }
