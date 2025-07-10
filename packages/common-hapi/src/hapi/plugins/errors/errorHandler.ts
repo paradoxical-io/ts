@@ -117,6 +117,10 @@ function systemMaintenance(e: unknown): e is { code: MaintenanceCodes } {
     case 'ENOTFOUND':
       return true;
     default:
-      return bottom(systemError.code, { data: false, log: m => log.warn(m) });
+      return bottom(systemError.code, never => {
+        log.warn(never)
+
+        return false
+      });
   }
 }
