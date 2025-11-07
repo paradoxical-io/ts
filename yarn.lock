@@ -3285,7 +3285,7 @@ __metadata:
     "@types/lodash": 4.14.168
     lodash: ^4.17.21
   peerDependencies:
-    jest: ^26.4.2
+    jest: ">=26.4.2"
   languageName: unknown
   linkType: soft
 
