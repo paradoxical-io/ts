@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common-sql",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
