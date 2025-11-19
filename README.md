@@ -43,6 +43,7 @@ This library is the result of years of building production services that handle 
 
 ### Server Infrastructure
 
+- **[@paradoxical-io/common-hapi](packages/common-hapi/README.md)** - Hapi framework utilities for rest based services
 - **[@paradoxical-io/common-server](packages/common-server/README.md)** - Production-ready server utilities
   - [Application Framework](packages/common-server/src/app/README.md) - ServiceBase for lifecycle management
   - [Cache Interface](packages/common-server/src/cache/README.md) - Type-safe caching abstraction
@@ -76,7 +77,6 @@ This library is the result of years of building production services that handle 
 ### Database Integration
 
 - **[@paradoxical-io/common-sql](packages/common-sql/README.md)** - TypeORM utilities for SQL databases
-- **[@paradoxical-io/common-hapi](packages/common-hapi/README.md)** - Hapi framework utilities
 
 ---
 
