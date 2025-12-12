@@ -38,7 +38,7 @@ export function sensitive<T extends object = object>(redaction?: PathRedaction<T
   };
 }
 
-const customLogger = Symbol('customLogger');
+const customLogger = Symbol('paradoxical:customLogger');
 
 /**
  * Add an annotation on a logger instance in a class to use as the logging instance for all annotation logMethods

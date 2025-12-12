@@ -1,16 +1,38 @@
 // make sure we allow all logging (even if the test runner says otherwise)
-process.env.PARADOX_LOG_LEVEL = 'info';
-
-// ensure log decorators always run
-process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
-
+import { metrics, timed as timedRaw } from '@paradoxical-io/common';
 import { extendJest } from '@paradoxical-io/common-test';
 
 import { logMethod } from '../logger';
 import { Metrics } from './metrics';
 import { timed } from './timingDecorator';
 
+process.env.PARADOX_LOG_LEVEL = 'info';
+
+// ensure log decorators always run
+process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
+
 extendJest();
+
+@metrics('custom')
+class TestWithCustomDefault {
+  // @ts-ignore
+  private readonly custom: Metrics = Metrics.instance;
+
+  @timedRaw({ stat: 'test_stat_async', tags: { test: 'true' } })
+  foo(): Promise<number> {
+    return Promise.resolve(2);
+  }
+}
+
+class TestWithDefault {
+  // @ts-ignore
+  private metrics: Metrics = Metrics.instance;
+
+  @timedRaw({ stat: 'test_stat_async', tags: { test: 'true' } })
+  foo(): Promise<number> {
+    return Promise.resolve(2);
+  }
+}
 
 class Test {
   @timed({ stat: 'test_stat_async', tags: { test: 'true' } })
@@ -71,16 +93,19 @@ test('timing is captured with annotation', () => {
   expect(Metrics.instance.mockBuffer).logToCli();
 });
 
-test('async timing is capture with annotation', async () => {
-  const result = await new Test().foo();
+test.each([new Test(), new TestWithDefault(), new TestWithCustomDefault()])(
+  'async timing is capture with annotation',
+  async instance => {
+    const result = await instance.foo();
 
-  expect(result).toEqual(2);
+    expect(result).toEqual(2);
 
-  expect(Metrics.instance.mockBuffer).toHaveLength(1);
-  expect(Metrics.instance.mockBuffer?.[0].startsWith('test_stat_async')).toBeTruthy();
-  expect(Metrics.instance.mockBuffer?.[0].includes('#test:true')).toBeTruthy();
-  expect(Metrics.instance.mockBuffer?.[0].includes('name:Test.foo')).toBeTruthy();
-});
+    expect(Metrics.instance.mockBuffer).toHaveLength(1);
+    expect(Metrics.instance.mockBuffer?.[0].startsWith('test_stat_async')).toBeTruthy();
+    expect(Metrics.instance.mockBuffer?.[0].includes('#test:true')).toBeTruthy();
+    expect(Metrics.instance.mockBuffer?.[0].includes(`name:${instance.constructor.name}.foo`)).toBeTruthy();
+  }
+);
 
 test('timing with annotation plays nicely with logging annotation', async () => {
   const result = await new Test().logAndTime(4);
