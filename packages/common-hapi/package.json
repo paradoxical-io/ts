@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common-hapi",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Common hapi code for paradoxical services",
   "files": [
     "dist/**/*.js",
