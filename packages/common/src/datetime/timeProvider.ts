@@ -1,22 +1,24 @@
 import { EpochMS, Milliseconds } from '@paradoxical-io/types';
 import { EpochSeconds } from '@paradoxical-io/types/dist/date';
-import { addMilliseconds } from 'date-fns';
-import addDays from 'date-fns/addDays';
-import addHours from 'date-fns/addHours';
-import addMinutes from 'date-fns/addMinutes';
-import addMonths from 'date-fns/addMonths';
-import addSeconds from 'date-fns/addSeconds';
-import addYears from 'date-fns/addYears';
-import endOfDay from 'date-fns/endOfDay';
-import endOfHour from 'date-fns/endOfHour';
-import endOfMonth from 'date-fns/endOfMonth';
-import endOfWeek from 'date-fns/endOfWeek';
-import endOfYear from 'date-fns/endOfYear';
-import startOfDay from 'date-fns/startOfDay';
-import startOfHour from 'date-fns/startOfHour';
-import startOfMonth from 'date-fns/startOfMonth';
-import startOfWeek from 'date-fns/startOfWeek';
-import startOfYear from 'date-fns/startOfYear';
+import {
+  addDays,
+  addHours,
+  addMilliseconds,
+  addMinutes,
+  addMonths,
+  addSeconds,
+  addYears,
+  endOfDay,
+  endOfHour,
+  endOfMonth,
+  endOfWeek,
+  endOfYear,
+  startOfDay,
+  startOfHour,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+} from 'date-fns';
 
 import { asMilli, TimeUnit } from './conversions';
 

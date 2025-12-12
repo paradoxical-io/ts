@@ -13,10 +13,12 @@ process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
 extendJest();
 
-@metrics('custom')
+@metrics<typeof TestWithCustomDefault>('custom')
 class TestWithCustomDefault {
-  // @ts-ignore
-  private readonly custom: Metrics = Metrics.instance;
+  constructor(
+    // @ts-ignore
+    private readonly custom: Metrics = Metrics.instance
+  ) {}
 
   @timedRaw({ stat: 'test_stat_async', tags: { test: 'true' } })
   foo(): Promise<number> {

@@ -10,28 +10,9 @@ import {
 } from '@paradoxical-io/types';
 import { EpochMS, EpochSeconds, ISODateString } from '@paradoxical-io/types/dist/date';
 import { bottom } from '@paradoxical-io/types/dist/exhaustiveness';
-import { parseISO } from 'date-fns';
-import { zonedTimeToUtc } from 'date-fns-tz';
 
 import { leftPad } from '../extensions';
 import { secondsToMilliSeconds } from './timeProvider';
-
-/**
- * Given an ISO date string (for example, '1980-08-31'), return an epoch representing
- * midnight on that day in the specified time zone.
- */
-export function isoDateStringToEpoch(isoDate: ISODateString, tz: string): EpochMS {
-  // make sure the date is in a valid format before attempting the conversion
-  const parsed = parseISO(isoDate);
-  const invalid = Number.isNaN(parsed.valueOf());
-
-  if (invalid) {
-    throw new Error(`${isoDate} is not a valid date in ISO format`);
-  }
-
-  const dateInCorrectTimezone = zonedTimeToUtc(isoDate, tz);
-  return dateInCorrectTimezone.valueOf() as EpochMS;
-}
 
 export function toEpochSeconds(time: EpochMS): EpochSeconds {
   return Math.floor(time / 1000) as EpochSeconds;

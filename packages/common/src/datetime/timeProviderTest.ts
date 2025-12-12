@@ -2,13 +2,7 @@
 
 import { EpochMS } from '@paradoxical-io/types';
 import { EpochSeconds } from '@paradoxical-io/types/dist/date';
-import { addMilliseconds } from 'date-fns';
-import addDays from 'date-fns/addDays';
-import addHours from 'date-fns/addHours';
-import addMinutes from 'date-fns/addMinutes';
-import addMonths from 'date-fns/addMonths';
-import addSeconds from 'date-fns/addSeconds';
-import addYears from 'date-fns/addYears';
+import { addDays, addHours, addMilliseconds, addMinutes, addMonths, addSeconds, addYears } from 'date-fns';
 
 import { TimeAdder, TimeProvider } from './timeProvider';
 
