@@ -1,5 +1,6 @@
 // make sure we allow all logging (even if the test runner says otherwise)
 process.env.PARADOX_LOG_LEVEL = 'info';
+process.env.PARADOX_ALLOW_UNREDACTED = 'true';
 
 import 'reflect-metadata';
 

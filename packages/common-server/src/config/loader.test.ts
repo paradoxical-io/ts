@@ -1,7 +1,8 @@
-import { load } from './loader';
-import { ConfigBlock } from "./contracts";
-import { ProvidedConfigValue } from "./providers/providedConfigValue";
 import { safeExpect } from '@paradoxical-io/common-test';
+
+import { ConfigBlock } from './contracts';
+import { load } from './loader';
+import { ProvidedConfigValue } from './providers/providedConfigValue';
 
 function schemaShape(): ConfigBlock<ProvidedConfig> {
   return {
@@ -24,9 +25,9 @@ function schemaShape(): ConfigBlock<ProvidedConfig> {
       value: {
         doc: 'The ssm path',
         format: String,
-        default: '/path/to/ssm'
-      }
-    }
+        default: '/path/to/ssm',
+      },
+    },
   };
 }
 
@@ -36,20 +37,7 @@ interface ProvidedConfig {
       allowAssume: boolean;
     };
   };
-  dynamic: ProvidedConfigValue
-}
-
-/**
- * The actual resolved config
- */
-// @ts-ignore
-interface Config {
-  host: {
-    auth: {
-      allowAssume: boolean;
-    };
-  };
-  dynamic: string
+  dynamic: ProvidedConfigValue;
 }
 
 test('loads from an object', async () => {

@@ -6,12 +6,12 @@ import { serializeError } from 'serialize-error';
 import * as winston from 'winston';
 import { LoggerOptions } from 'winston';
 
+import { PathRedaction, redact, redactKey } from '../../../common/src/utils/redaction';
 import { isLocal } from '../env';
 import { md5 } from '../hash';
 import { isAxiosError } from '../http';
 import { Metrics } from '../metrics';
 import { getCurrentUserId, getOptionalContext, Trace, traceID } from '../trace';
-import { PathRedaction, redact, redactKey } from './redaction';
 
 export interface Cls {
   trace?: string;
@@ -182,12 +182,12 @@ export class Logger {
     }
   }
 
-  info(msg: string) {
+  info(msg: string, context?: Context) {
     if (this.emitMetrics) {
       Metrics.instance.increment('log.level', { ...this.customMetricsTags, level: 'info' });
     }
 
-    this.logger.info(this.autoAppendContext(msg), this.meta());
+    this.logger.info(this.autoAppendContext(msg), this.meta(context));
   }
 
   /**
@@ -347,8 +347,8 @@ export class Logger {
     return `${msg} ${context}`.trim();
   }
 
-  private meta(): object {
-    return { ...this.ctx, ...this.addRevision(), ...this.addServiceName(), ...this.clsFactory.currentCls() };
+  private meta(ctx?: Context): object {
+    return { ...ctx, ...this.ctx, ...this.addRevision(), ...this.addServiceName(), ...this.clsFactory.currentCls() };
   }
 
   private addRevision(): { revision?: string } {

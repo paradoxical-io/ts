@@ -1,7 +1,6 @@
-import { safeStringify } from '@paradoxical-io/common';
 import { nullOrUndefined } from '@paradoxical-io/types';
 
-import { currentEnvironment } from '../env';
+import { safeStringify } from './text';
 
 export interface PathRedaction<T = object> {
   /**
@@ -32,15 +31,15 @@ const AUTO_REDACT_FIELD_NAMES = [
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function redactKey(data: any): string {
-  if (currentEnvironment() === 'prod') {
-    return '<redacted>';
+  if (process.env.PARADOX_ALLOW_UNREDACTED === 'true') {
+    if (typeof data === 'object') {
+      return `<redactable(${safeStringify(data)})>`;
+    }
+
+    return `<redactable(${data?.toString()})>`;
   }
 
-  if (typeof data === 'object') {
-    return `<redactable(${safeStringify(data)})>`;
-  }
-
-  return `<redactable(${data?.toString()})>`;
+  return '<redacted>';
 }
 
 function shouldRedact<T extends object>(key: string, redaction: PathRedaction<T>): boolean {

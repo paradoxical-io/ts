@@ -1,20 +1,18 @@
-import { SafeJson } from '@paradoxical-io/common';
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-// set forced redaction for testing purposes
-process.env.FORCE_REDACTION = 'true';
-
 // make sure we allow all logging (even if the test runner says otherwise)
 process.env.PARADOX_LOG_LEVEL = 'info';
 
 // ensure log decorators always run
 process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
+process.env.PARADOX_ALLOW_UNREDACTED = 'true';
+
+import { SafeJson, sensitive } from '@paradoxical-io/common';
 import { extendJest } from '@paradoxical-io/common-test';
 
 import { Metrics } from '../metrics';
 import { log, Logger } from './log';
-import { logMethod, sensitive } from './logDecorator';
+import { logMethod } from './logDecorator';
 
 extendJest();
 

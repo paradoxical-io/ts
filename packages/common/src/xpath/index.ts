@@ -1,1 +1,1 @@
-export * from './xpathBuilder'
+export * from './xpathBuilder';
