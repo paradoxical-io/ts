@@ -1,3 +1,3 @@
 export * from './log';
 export * from './logDecorator';
-export * from './redaction';
+export * from '../../../common/src/utils/redaction';

@@ -1,5 +1,6 @@
 export * from './code';
 export * from './datetime';
+export * from './decorators'
 export * from './di';
 export * from './errors';
 export * from './extensions';

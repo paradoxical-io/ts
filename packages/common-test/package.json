@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common-test",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "description": "Common test-code for jest",
   "files": [
     "dist/**/*.js",

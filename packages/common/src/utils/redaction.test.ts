@@ -2,6 +2,10 @@ import { safeExpect, usingEnv } from '@paradoxical-io/common-test';
 
 import { redact } from './redaction';
 
+beforeAll(() => {
+  process.env.PARADOX_ALLOW_UNREDACTED = 'true';
+});
+
 describe('shows redaction in dev', () => {
   test('redacts nested', () => {
     const result = redact({
@@ -112,6 +116,8 @@ describe('shows redaction in dev', () => {
 describe('hard redacts in prod', () => {
   test('all keys show redaction and no inner data', async () => {
     await usingEnv('prod', async () => {
+      process.env.PARADOX_ALLOW_UNREDACTED = 'false';
+
       const result = redact(
         {
           password: 'bad',
