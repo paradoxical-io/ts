@@ -47,7 +47,7 @@
     "cls-hooked": "^4.2.2",
     "convict": "5.1.0",
     "csv": "^6.1.0",
-    "csv-parser": "^2.4.0",
+    "csv-parser": "^2.3.5",
     "csv-writer": "^1.6.0",
     "date-fns-tz": "^2.0.0",
     "hot-shots": "^6.4.1",
