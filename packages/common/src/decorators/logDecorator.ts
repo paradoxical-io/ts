@@ -44,8 +44,10 @@ const customLogger = Symbol('customLogger');
  * Add an annotation on a logger instance in a class to use as the logging instance for all annotation logMethods
  * allows you to capture context in a class and have that context be propagated through annotation logging.
  */
-export function argLogger(target: object, propertyKey: string, descriptor: PropertyDescriptor) {
-  Reflect.defineMetadata(customLogger, descriptor, target);
+export function logger<T>(prop: string) {
+  return (constructor: T) => {
+    Reflect.defineMetadata(customLogger, prop, constructor);
+  };
 }
 
 export interface Logger {
@@ -53,14 +55,15 @@ export interface Logger {
 }
 
 function resolveLogger(target: object): Logger | undefined {
-  const logger = Reflect.getMetadata(customLogger, target);
-  if (!logger) {
-    return undefined;
+  const loggingPropertyKey = Reflect.getMetadata(customLogger, target.constructor) ?? 'logger';
+
+  // @ts-ignore
+  const existsLoggerProperty = target[loggingPropertyKey];
+  if (existsLoggerProperty) {
+    return existsLoggerProperty as Logger;
   }
 
-  const descriptor = logger as PropertyDescriptor;
-
-  return descriptor.value.apply(target) as Logger;
+  return undefined;
 }
 
 function logMethodArguments(
