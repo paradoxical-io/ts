@@ -11,6 +11,7 @@ import {
   ServerOptions,
   ServerRoute,
 } from '@hapi/hapi';
+import { redact } from '@paradoxical-io/common';
 import {
   addToOptionalContext,
   currentEnvironment,
@@ -18,7 +19,6 @@ import {
   log,
   MetricEmitter,
   Metrics,
-  redact,
   withNewTrace,
 } from '@paradoxical-io/common-server';
 import { notNullOrUndefined } from '@paradoxical-io/types';
