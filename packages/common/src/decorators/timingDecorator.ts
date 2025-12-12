@@ -10,9 +10,9 @@ const customMetrics = Symbol('paradoxical:metrics');
  * Add an annotation on a logger instance in a class to use as the logging instance for all annotation logMethods
  * allows you to capture context in a class and have that context be propagated through annotation logging.
  */
-export function metrics<T extends { new (...args: any[]): {} }>(prop: string) {
-  return (constructor: T) => {
-    Reflect.defineMetadata(customMetrics, prop, constructor);
+export function metrics<T extends { new (...args: any[]): {} }>(prop: keyof InstanceType<T> | string) {
+  return (target: T) => {
+    Reflect.defineMetadata(customMetrics, prop, target);
   };
 }
 

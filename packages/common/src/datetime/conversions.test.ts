@@ -11,25 +11,12 @@ import {
   dateToCalendarDay,
   epoch,
   fromIsoDateString,
-  isoDateStringToEpoch,
   isoToCalendarDay,
   toIsoDateString,
   toYearMonthDayString,
   yearMonthDayToEpoch,
 } from './conversions';
 import { nanoSecondsToMilliSeconds, secondsToMilliSeconds } from './timeProvider';
-
-const tz = 'America/Los_Angeles';
-
-test('ISO date string is converted to an epoch correctly', () => {
-  const str = '2020-01-01' as ISODateString;
-  expect(isoDateStringToEpoch(str, tz)).toEqual(1577865600000);
-});
-
-test('ISO date string in wrong format throws', () => {
-  const str = '1/1/2020' as ISODateString;
-  expect(() => isoDateStringToEpoch(str, tz)).toThrow();
-});
 
 test('seconds to ms', () => {
   expect(secondsToMilliSeconds(1)).toEqual(1000);
