@@ -54,11 +54,10 @@ export function timed({
 
     const originalMethod = descriptor!.value;
 
-    // @ts-ignore
-    const resolvedMetrics: Metrics | undefined = metrics ?? resolveMetrics(this);
-
     // editing the descriptor/value parameter
     descriptor!.value = function () {
+      const resolvedMetrics: Metrics | undefined = metrics ?? resolveMetrics(this);
+
       const start = preciseTimeMilli();
 
       const timingResult = () => {
