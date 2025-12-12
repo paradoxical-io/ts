@@ -1,5 +1,5 @@
 // make sure we allow all logging (even if the test runner says otherwise)
-import { metrics, timed as timedRaw } from '@paradoxical-io/common';
+import { metricsProvider, timed as timedRaw } from '@paradoxical-io/common';
 import { extendJest } from '@paradoxical-io/common-test';
 
 import { logMethod } from '../logger';
@@ -13,12 +13,14 @@ process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
 extendJest();
 
-@metrics<typeof TestWithCustomDefault>('custom')
 class TestWithCustomDefault {
-  constructor(
-    // @ts-ignore
-    private readonly custom: Metrics = Metrics.instance
-  ) {}
+  @metricsProvider
+  // @ts-ignore
+  private _custom: Metrics;
+
+  constructor(custom: Metrics = Metrics.instance) {
+    this._custom = custom;
+  }
 
   @timedRaw({ stat: 'test_stat_async', tags: { test: 'true' } })
   foo(): Promise<number> {

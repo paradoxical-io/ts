@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // make sure we allow all logging (even if the test runner says otherwise)
-import { Logger, logger, logMethod } from './logDecorator';
+import { Logger, loggingProvider, logMethod } from './logDecorator';
 
 process.env.PARADOX_LOG_LEVEL = 'info';
 
@@ -18,8 +18,8 @@ class Foo {
   }
 }
 
-@logger('loggerFancy')
 class FooCustomLogPropertyName {
+  @loggingProvider
   private readonly loggerFancy: Logger = console;
 
   @logMethod()
