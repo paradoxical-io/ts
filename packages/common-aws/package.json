@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common-aws",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "Common aws for paradox services",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
