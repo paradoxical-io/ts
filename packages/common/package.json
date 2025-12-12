@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Common code for all paradox projects",
   "files": [
     "dist/**/*.js",

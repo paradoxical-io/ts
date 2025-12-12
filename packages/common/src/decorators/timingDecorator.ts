@@ -4,6 +4,25 @@ export interface Metrics {
   timing(stat: string, value: number, tags?: Record<string, string>): void;
 }
 
+const customMetrics = Symbol('paradoxical:metrics');
+
+/**
+ * Add an annotation on a logger instance in a class to use as the logging instance for all annotation logMethods
+ * allows you to capture context in a class and have that context be propagated through annotation logging.
+ */
+export function metrics<T extends { new (...args: any[]): {} }>(prop: string) {
+  return (constructor: T) => {
+    Reflect.defineMetadata(customMetrics, prop, constructor);
+  };
+}
+
+function resolveMetrics(target: object): Metrics | undefined {
+  const property = Reflect.getMetadata(customMetrics, target.constructor) ?? 'metrics';
+
+  // @ts-ignore
+  return target?.[property] as Metrics;
+}
+
 /**
  * Emits a statsd metric timing the method
  * @param stat An optional stat name. If not supplied a default one will be used (prefer default)
@@ -17,8 +36,8 @@ export function timed({
 }: {
   stat?: string;
   tags?: Record<string, string>;
-  metrics: Metrics;
-}) {
+  metrics?: Metrics;
+} = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (target: any, method: string, descriptor?: TypedPropertyDescriptor<any>) => {
     if (process.env.PARADOX_SKIP_TIMING_DECORATORS) {
@@ -37,10 +56,12 @@ export function timed({
 
     // editing the descriptor/value parameter
     descriptor!.value = function () {
+      const resolvedMetrics: Metrics | undefined = metrics ?? resolveMetrics(this);
+
       const start = preciseTimeMilli();
 
       const timingResult = () => {
-        metrics.timing(metricName, preciseTimeMilli() - start, {
+        resolvedMetrics?.timing(metricName, preciseTimeMilli() - start, {
           ...tags,
           name: `${target.constructor?.name}.${method}`,
         });

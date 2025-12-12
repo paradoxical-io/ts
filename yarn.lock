@@ -5840,7 +5840,7 @@ __metadata:
   dependencies:
     chalk: ^4.0.0
     highlight.js: ^10.7.1
-    mz: ^2.4.0
+    mz: ^2.4.1
     parse5: ^5.1.1
     parse5-htmlparser2-tree-adapter: ^6.0.0
     yargs: ^16.0.0
@@ -9660,7 +9660,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"logform@npm:^2.3.2, logform@npm:^2.4.0":
+"logform@npm:^2.3.2, logform@npm:^2.4.1":
   version: 2.5.1
   resolution: "logform@npm:2.5.1"
   dependencies:
@@ -10153,7 +10153,7 @@ __metadata:
   dependencies:
     mkdirp: ~0.5.1
     ncp: ~2.0.0
-    rimraf: ~2.4.0
+    rimraf: ~2.4.1
   checksum: 59d4b5ebff6c265b452d6630ae8873d573c82e36fdc1ed9c34c7901a0bf2d3d357022f49db8e9bded127b743f709c7ef7befec249a2b3967578d649a8029aa06
   languageName: node
   linkType: hard
@@ -10170,7 +10170,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mz@npm:^2.4.0":
+"mz@npm:^2.4.1":
   version: 2.7.0
   resolution: "mz@npm:2.7.0"
   dependencies:
@@ -11358,7 +11358,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:~2.4.0":
+"rimraf@npm:~2.4.1":
   version: 2.4.5
   resolution: "rimraf@npm:2.4.5"
   dependencies:
@@ -13011,8 +13011,8 @@ __metadata:
   linkType: hard
 
 "watchpack@npm:^2.0.0-beta.10":
-  version: 2.4.0
-  resolution: "watchpack@npm:2.4.0"
+  version: 2.4.1
+  resolution: "watchpack@npm:2.4.1"
   dependencies:
     glob-to-regexp: ^0.4.1
     graceful-fs: ^4.1.2
@@ -13112,7 +13112,7 @@ __metadata:
     "@dabh/diagnostics": ^2.0.2
     async: ^3.2.3
     is-stream: ^2.0.0
-    logform: ^2.4.0
+    logform: ^2.4.1
     one-time: ^1.0.0
     readable-stream: ^3.4.0
     safe-stable-stringify: ^2.3.1
