@@ -1,3 +1,4 @@
+import { xpath } from '@paradoxical-io/common';
 import { safeExpect } from '@paradoxical-io/common-test';
 import { Column, Connection, Entity, PrimaryColumn, PrimaryGeneratedColumn, Repository } from 'typeorm';
 
@@ -6,7 +7,6 @@ import { ColumnNames, CrudBase } from './crudBase';
 import { SqlDataAccessBase } from './dataAccessBase';
 import { getColumnNameFunction } from './typeorm/queryBuilderHelpers';
 import { JsonTransformer } from './typeorm/transformers/jsonTransformer';
-import { xpath } from '@paradoxical-io/common';
 
 @Entity({ name: 'test' })
 class TestModel extends CrudBase {

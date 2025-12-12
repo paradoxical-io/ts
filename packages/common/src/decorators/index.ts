@@ -1,2 +1,2 @@
-export * from './timingDecorator'
-export * from './logDecorator'
+export * from './logDecorator';
+export * from './timingDecorator';

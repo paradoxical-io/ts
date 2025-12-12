@@ -13,6 +13,6 @@ export function bottom<T = never>(value: never, onNever?: (value: never) => T): 
   if (!onNever) {
     throw new BottomException(`bottom hit: ${JSON.stringify(value)}`);
   } else {
-    return onNever(value)
+    return onNever(value);
   }
 }

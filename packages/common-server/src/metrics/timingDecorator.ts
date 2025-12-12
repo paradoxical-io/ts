@@ -1,6 +1,7 @@
-import { Tags } from './contracts';
-import { StatsD } from 'hot-shots';
 import { timed as timingDecorator } from '@paradoxical-io/common';
+import { StatsD } from 'hot-shots';
+
+import { Tags } from './contracts';
 import { Metrics } from './metrics';
 
 /**
@@ -9,6 +10,10 @@ import { Metrics } from './metrics';
  * @param tags Custom set of tags to use. The tag: "name" will always be included which is the class name and method
  * @param metrics Metrics emitter
  */
-export function timed({ stat, tags = {}, metrics }: { stat?: string; tags?: Tags, metrics?: Pick<StatsD, 'timing'> } = {}) {
+export function timed({
+  stat,
+  tags = {},
+  metrics,
+}: { stat?: string; tags?: Tags; metrics?: Pick<StatsD, 'timing'> } = {}) {
   return timingDecorator({ stat, tags, metrics: metrics ?? Metrics.instance });
 }

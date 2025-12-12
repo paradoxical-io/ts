@@ -10,7 +10,15 @@ export interface Metrics {
  * @param tags Custom set of tags to use. The tag: "name" will always be included which is the class name and method
  * @param metrics Metrics emitter
  */
-export function timed({ stat, tags = {}, metrics }: { stat?: string; tags?: Record<string, string>, metrics: Metrics }) {
+export function timed({
+  stat,
+  tags = {},
+  metrics,
+}: {
+  stat?: string;
+  tags?: Record<string, string>;
+  metrics: Metrics;
+}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (target: any, method: string, descriptor?: TypedPropertyDescriptor<any>) => {
     if (process.env.PARADOX_SKIP_TIMING_DECORATORS) {

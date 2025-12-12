@@ -1,6 +1,6 @@
 export * from './code';
 export * from './datetime';
-export * from './decorators'
+export * from './decorators';
 export * from './di';
 export * from './errors';
 export * from './extensions';
@@ -10,4 +10,4 @@ export * from './probability';
 export * from './promise';
 export * from './pubsub';
 export * from './utils';
-export * from './xpath'
+export * from './xpath';

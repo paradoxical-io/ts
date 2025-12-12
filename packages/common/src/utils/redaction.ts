@@ -1,4 +1,5 @@
 import { nullOrUndefined } from '@paradoxical-io/types';
+
 import { safeStringify } from './text';
 
 export interface PathRedaction<T = object> {

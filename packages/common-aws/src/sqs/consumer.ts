@@ -462,10 +462,10 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
           return this.republishLater(event, result);
         default:
           return bottom(result, never => {
-            log.warn(never)
+            log.warn(never);
 
             // we don't know the type of the result, so give it to the consumer to handle
-            return true
+            return true;
           });
       }
     }

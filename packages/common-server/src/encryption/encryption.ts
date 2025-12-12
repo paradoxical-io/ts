@@ -15,7 +15,10 @@ export class Encryption {
     passphrase: PrivateKeyPassphrase
   ): T {
     const buffer = Buffer.from(value, 'base64');
-    const decrypted = privateDecrypt({ key: privateKey, passphrase, padding: constants.RSA_PKCS1_OAEP_PADDING }, buffer);
+    const decrypted = privateDecrypt(
+      { key: privateKey, passphrase, padding: constants.RSA_PKCS1_OAEP_PADDING },
+      buffer
+    );
 
     return decrypted.toString('utf8') as T;
   }

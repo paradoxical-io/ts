@@ -118,9 +118,9 @@ function systemMaintenance(e: unknown): e is { code: MaintenanceCodes } {
       return true;
     default:
       return bottom(systemError.code, never => {
-        log.warn(never)
+        log.warn(never);
 
-        return false
+        return false;
       });
   }
 }

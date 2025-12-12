@@ -45,5 +45,5 @@ export function isIntegrationTestId<T extends string>(id?: T): boolean {
  * @param value
  */
 export function asBrandSafe<B extends Brand<K, unknown>, K>(value: K | undefined | null): B | undefined {
-  return typedBrandSafe<B, K>(value)
+  return typedBrandSafe<B, K>(value);
 }

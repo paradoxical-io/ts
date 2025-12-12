@@ -7,8 +7,8 @@ export * from './math';
 export * from './maxStack';
 export * from './properties';
 export * from './queryParam';
+export * from './redaction';
 export * from './retry';
 export * from './rounding';
 export * from './sortBy';
 export * from './text';
-export * from './redaction'
