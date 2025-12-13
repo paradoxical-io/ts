@@ -1,6 +1,5 @@
 export * from './assertions';
 export * from './brands';
-export * from './email';
 export * from './ids';
 export * from './images';
 export * from './math';

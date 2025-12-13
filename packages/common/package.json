@@ -1,6 +1,6 @@
 {
   "name": "@paradoxical-io/common",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "description": "Common code for all paradox projects",
   "files": [
     "dist/**/*.js",
@@ -38,8 +38,7 @@
     "runes": "^0.4.3",
     "seedrandom": "^3.0.5",
     "serialize-error": "^6.0.0",
-    "uuid": "^8.3.2",
-    "validate.js": "^0.13.1"
+    "uuid": "^8.3.2"
   },
   "lint-staged": {
     "*.ts": [
