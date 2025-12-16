@@ -18,7 +18,13 @@ function resolveMetrics(target: object): Metrics | undefined {
   const property = Reflect.getMetadata(customMetrics, target) ?? 'metrics';
 
   // @ts-ignore
-  return target?.[property] as Metrics;
+  const metrics = target?.[property] as Metrics;
+
+  if (metrics && typeof metrics === 'object' && typeof metrics.timing === 'function') {
+    return metrics;
+  }
+
+  return undefined;
 }
 
 /**
@@ -52,17 +58,35 @@ export function timed({
 
     const originalMethod = descriptor!.value;
 
+    const warningsByClass = new Set<string>();
     // editing the descriptor/value parameter
     descriptor!.value = function () {
       const resolvedMetrics: Metrics | undefined = metrics ?? resolveMetrics(this);
 
+      const logged = warningsByClass.has(this.constructor.name);
+      // only log once
+      if (resolvedMetrics === undefined && !process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !logged) {
+        // eslint-disable-next-line no-console
+        console.log(`No metrics instance could be resolved for timed decorator on class ${this.constructor.name}`);
+        warningsByClass.add(this.constructor.name);
+      }
+
       const start = preciseTimeMilli();
 
       const timingResult = () => {
-        resolvedMetrics?.timing(metricName, preciseTimeMilli() - start, {
-          ...tags,
-          name: `${target.constructor?.name}.${method}`,
-        });
+        try {
+          resolvedMetrics?.timing(metricName, preciseTimeMilli() - start, {
+            ...tags,
+            name: `${target.constructor?.name}.${method}`,
+          });
+        } catch (e: unknown) {
+          if (process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS) {
+            // swallow
+          } else {
+            // eslint-disable-next-line no-console
+            console.error('Error emitting timing metric', e);
+          }
+        }
       };
 
       // apply the method

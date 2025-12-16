@@ -1,17 +1,33 @@
+/* eslint-disable no-console,@typescript-eslint/no-explicit-any */
 // make sure we allow all logging (even if the test runner says otherwise)
-import { metricsProvider, timed as timedRaw } from '@paradoxical-io/common';
-import { extendJest } from '@paradoxical-io/common-test';
-
-import { logMethod } from '../logger';
-import { Metrics } from './metrics';
-import { timed } from './timingDecorator';
-
 process.env.PARADOX_LOG_LEVEL = 'info';
 
 // ensure log decorators always run
 process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
+import { metricsProvider, timed as timedRaw } from '@paradoxical-io/common';
+import { extendJest, safeExpect } from '@paradoxical-io/common-test';
+
+import { logMethod } from '../logger';
+import { Metrics } from './metrics';
+import { timed } from './timingDecorator';
+
 extendJest();
+
+class TestWithInvalidMetricsType {
+  @metricsProvider
+  // @ts-ignore
+  private _custom: any;
+
+  constructor(custom: any) {
+    this._custom = custom;
+  }
+
+  @timedRaw({ stat: 'test_stat_async', tags: { test: 'true' } })
+  foo(): Promise<number> {
+    return Promise.resolve(2);
+  }
+}
 
 class TestWithCustomDefault {
   @metricsProvider
@@ -135,4 +151,40 @@ test('timing with annotation plays nicely with logging annotation reverse', asyn
   expect(Metrics.instance.mockBuffer?.[1].includes('#test:true')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[1].includes('name:Test.timeAndLog')).toBeTruthy();
   expect(Metrics.instance.mockBuffer?.[0]).toEqual('log.level:1|c|#level:info');
+});
+
+test('invalid metrics type allows for method to process', async () => {
+  const result = await new TestWithInvalidMetricsType('not an object').foo();
+
+  safeExpect(result).toEqual(2);
+});
+
+test('invalid metric object type allows for method to process', async () => {
+  console.log = jest.fn();
+
+  // make sure there is a class JUST for this test since we are logging that we only want to log once per class
+  const UniqueClass = class extends TestWithInvalidMetricsType {};
+  const result = await new UniqueClass({}).foo();
+  const result2 = await new UniqueClass({}).foo();
+
+  safeExpect(result).toEqual(2);
+  safeExpect(result2).toEqual(2);
+
+  safeExpect(console.log).toHaveBeenCalledTimes(1);
+});
+
+test('invalid metric object with type that isnt correct type allows for method to process', async () => {
+  const result = await new TestWithInvalidMetricsType({
+    timing: 'foo',
+  }).foo();
+
+  safeExpect(result).toEqual(2);
+});
+
+test('invalid metric object with type that is missing arguments allows for method to process', async () => {
+  const result = await new TestWithInvalidMetricsType({
+    timing: () => {},
+  }).foo();
+
+  safeExpect(result).toEqual(2);
 });
