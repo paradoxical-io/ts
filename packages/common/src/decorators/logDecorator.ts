@@ -57,7 +57,11 @@ function resolveLogger(target: object): Logger | undefined {
 
   // @ts-ignore
   const existsLoggerProperty = target[loggingPropertyKey];
-  if (existsLoggerProperty) {
+  if (
+    existsLoggerProperty &&
+    typeof existsLoggerProperty === 'object' &&
+    typeof existsLoggerProperty.info === 'function'
+  ) {
     return existsLoggerProperty as Logger;
   }
 
@@ -137,6 +141,7 @@ export function logMethod({
 
     const originalMethod = descriptor!.value;
 
+    let warningLogged = false;
     // editing the descriptor/value parameter
     descriptor!.value = function () {
       const sensitiveParameters: SensitiveMetadata = Reflect.getOwnMetadata(sensitiveMetadata, target, method);
@@ -177,6 +182,13 @@ export function logMethod({
       const resolvedLogger: Logger | undefined = canLog ? resolveLogger(this) ?? logger : undefined;
 
       if (!resolvedLogger) {
+        // only log once
+        if (!process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !warningLogged) {
+          // eslint-disable-next-line no-console
+          console.log(`No logging instance could be resolved for timed decorator on class ${this.constructor.name}`);
+          warningLogged = true;
+        }
+
         return originalMethod.apply(this, arguments);
       }
 
