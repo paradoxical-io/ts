@@ -1,16 +1,16 @@
 /* eslint-disable no-console,@typescript-eslint/no-explicit-any */
 // make sure we allow all logging (even if the test runner says otherwise)
+process.env.PARADOX_LOG_LEVEL = 'info';
+
+// ensure log decorators always run
+process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
+
 import { metricsProvider, timed as timedRaw } from '@paradoxical-io/common';
 import { extendJest, safeExpect } from '@paradoxical-io/common-test';
 
 import { logMethod } from '../logger';
 import { Metrics } from './metrics';
 import { timed } from './timingDecorator';
-
-process.env.PARADOX_LOG_LEVEL = 'info';
-
-// ensure log decorators always run
-process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
 extendJest();
 
@@ -162,8 +162,10 @@ test('invalid metrics type allows for method to process', async () => {
 test('invalid metric object type allows for method to process', async () => {
   console.log = jest.fn();
 
-  const result = await new TestWithInvalidMetricsType({}).foo();
-  const result2 = await new TestWithInvalidMetricsType({}).foo();
+  // make sure there is a class JUST for this test since we are logging that we only want to log once per class
+  const UniqueClass = class extends TestWithInvalidMetricsType {};
+  const result = await new UniqueClass({}).foo();
+  const result2 = await new UniqueClass({}).foo();
 
   safeExpect(result).toEqual(2);
   safeExpect(result2).toEqual(2);

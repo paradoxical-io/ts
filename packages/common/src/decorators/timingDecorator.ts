@@ -58,16 +58,17 @@ export function timed({
 
     const originalMethod = descriptor!.value;
 
-    let warningLogged = false;
+    const warningsByClass = new Set<string>();
     // editing the descriptor/value parameter
     descriptor!.value = function () {
       const resolvedMetrics: Metrics | undefined = metrics ?? resolveMetrics(this);
 
+      const logged = warningsByClass.has(this.constructor.name);
       // only log once
-      if (resolvedMetrics === undefined && !process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !warningLogged) {
+      if (resolvedMetrics === undefined && !process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !logged) {
         // eslint-disable-next-line no-console
         console.log(`No metrics instance could be resolved for timed decorator on class ${this.constructor.name}`);
-        warningLogged = true;
+        warningsByClass.add(this.constructor.name);
       }
 
       const start = preciseTimeMilli();

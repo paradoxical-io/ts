@@ -141,7 +141,7 @@ export function logMethod({
 
     const originalMethod = descriptor!.value;
 
-    let warningLogged = false;
+    const warningsByClass = new Set<string>();
     // editing the descriptor/value parameter
     descriptor!.value = function () {
       const sensitiveParameters: SensitiveMetadata = Reflect.getOwnMetadata(sensitiveMetadata, target, method);
@@ -183,12 +183,13 @@ export function logMethod({
 
       const loggingEnabled = canLog && resolvedLogger;
 
+      const warningWasLogged = warningsByClass.has(this.constructor.name);
       if (!loggingEnabled) {
         // only log once
-        if (!process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !warningLogged && !resolvedLogger) {
+        if (!process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !warningWasLogged && !resolvedLogger) {
           // eslint-disable-next-line no-console
           console.log(`No logging instance could be resolved for timed decorator on class ${this.constructor.name}`);
-          warningLogged = true;
+          warningsByClass.add(this.constructor.name);
         }
 
         return originalMethod.apply(this, arguments);
