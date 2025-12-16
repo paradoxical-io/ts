@@ -179,11 +179,13 @@ export function logMethod({
         canLog = chance({ percentage: samplePercent });
       }
 
-      const resolvedLogger: Logger | undefined = canLog ? resolveLogger(this) ?? logger : undefined;
+      const resolvedLogger: Logger | undefined = resolveLogger(this) ?? logger;
 
-      if (!resolvedLogger) {
+      const loggingEnabled = canLog && resolvedLogger;
+
+      if (!loggingEnabled) {
         // only log once
-        if (!process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !warningLogged) {
+        if (!process.env.PARADOX_QUIET_TIMING_DECORATORS_EXCEPTIONS && !warningLogged && !resolvedLogger) {
           // eslint-disable-next-line no-console
           console.log(`No logging instance could be resolved for timed decorator on class ${this.constructor.name}`);
           warningLogged = true;
