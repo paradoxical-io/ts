@@ -22,6 +22,7 @@ Whether you're building a startup or scaling an enterprise service, these librar
 Our philosophy is simple: **production code should be safe, testable, and easy to reason about.**
 
 Applications should:
+
 - **Respect system signals** for shutdown/interrupts
 - **Be easy to start up** and log lifecycle events
 - **Be safe to run** in different environments without accidentally affecting production
@@ -52,7 +53,7 @@ This library is the result of years of building production services that handle 
   - [CSV Processing](packages/common-server/src/csv/README.md) - Type-safe CSV reading and writing
   - [Encryption](packages/common-server/src/encryption/README.md) - AES-256-GCM and RSA utilities
   - [Environment](packages/common-server/src/env/README.md) - Environment detection and management
-  - [Extensions](packages/common-server/src/extensions/README.md) - Stream and iterator utilities
+  - [Extensions](packages/common/src/extensions/README.md) - Stream and iterator utilities
   - [Hashing](packages/common-server/src/hash/README.md) - Consistent hashing for feature flags
   - [HTTP Client](packages/common-server/src/http/README.md) - Axios wrappers with logging and proxies
   - [Locking](packages/common-server/src/locking/README.md) - Distributed lock interface
@@ -103,7 +104,7 @@ class Example extends ServiceBase {
   }
 }
 
-await app(new Example())
+await app(new Example());
 ```
 
 ### Configuration
@@ -117,12 +118,12 @@ For example, we can create a configuration that uses the concept of a `Provided 
 Imagine we load `ProvidedConfig` from [our example](packages/common-server/src/config/loader.test.ts). How do we get the actual value of `/path/to/ssm`? We can resolve each value in parallel:
 
 ```typescript
-const resolveConfig = async (resolver: ValueProvider, config: ProvidedConfig): Promise<Config> =>  {
+const resolveConfig = async (resolver: ValueProvider, config: ProvidedConfig): Promise<Config> => {
   return autoResolve({
     host: config.host,
-    dynamic: async () => resolver.getValue(config.dynamic)
-  })
-}
+    dynamic: async () => resolver.getValue(config.dynamic),
+  });
+};
 ```
 
 `autoResolve` will recursively go through the object and automagically resolve any lambda-based promises in parallel. This way you can have throughput limitation on SSM/etc and dynamically resolve your configuration with minimal friction.
@@ -140,7 +141,7 @@ You may wonder how you generate a trace. To create a new one you can easily wrap
 ```typescript
 await withNewTrace(async () => {
   // ...
-})
+});
 ```
 
 If you have a trace already provided (for example via a library like [hapi](https://hapi.dev/tutorials/logging/?lang=en_US)) you can provide a trace ID with:
@@ -206,7 +207,7 @@ To see how to easily create a connection to in-memory databases (sqlite) or mysq
 Other than the trace logging we've mentioned above, our logger supports context-sensitive log wrapping. For example:
 
 ```typescript
-const envBasedLogger = log.with({ env: currentEnvironment() })
+const envBasedLogger = log.with({ env: currentEnvironment() });
 
 envBasedLogger.info('Booting up!');
 envBasedLogger.info('Welcome');
@@ -307,7 +308,7 @@ Need to roll out features gradually or run A/B tests? Our consistent hashing uti
 
 ```typescript
 // Roll out to 10% of users
-if (consistentChance(userId, 'new-feature', 0.10)) {
+if (consistentChance(userId, 'new-feature', 0.1)) {
   // User is in the 10%
 }
 

@@ -41,7 +41,6 @@ module.exports = {
           'readline',
           'repl',
           'smalloc',
-          'stream',
           'string_decoder',
           'sys',
           'timers',
