@@ -1,4 +1,4 @@
-import { Streams } from '@paradoxical-io/common-server';
+import { Streams } from '@paradoxical-io/common';
 import { CompoundKey, notNullOrUndefined } from '@paradoxical-io/types';
 
 import { KeyValueList, KeyValueTable } from '../keyTable';
