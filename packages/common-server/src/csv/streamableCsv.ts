@@ -1,8 +1,7 @@
+import { TypedReadable, TypedTransformable } from '@paradoxical-io/common';
 import { Brand } from '@paradoxical-io/types';
 import { stringify } from 'csv';
 import stream from 'stream';
-
-import { TypedReadable, TypedTransformable } from '../extensions';
 
 export interface StreamableOptions {
   dateToISO?: boolean;

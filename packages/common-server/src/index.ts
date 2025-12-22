@@ -5,7 +5,6 @@ export * from './contracts';
 export * from './csv';
 export * from './encryption';
 export * from './env';
-export * from './extensions';
 export * from './hash';
 export * from './http';
 export * from './locking';
