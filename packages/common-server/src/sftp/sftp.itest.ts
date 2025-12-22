@@ -1,8 +1,8 @@
+import { Streams } from '@paradoxical-io/common';
 import { safeExpect } from '@paradoxical-io/common-test';
 import { Readable } from 'stream';
 
 import { CsvStreamWriter } from '../csv';
-import { Streams } from '../extensions';
 import { newSftpDocker } from './docker';
 import { Sftp } from './sftp';
 
