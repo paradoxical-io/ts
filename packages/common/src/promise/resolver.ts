@@ -1,10 +1,8 @@
-import { Limiter } from '@paradoxical-io/common/dist/promise/limiter';
-
-import { ReloadableProvidedValue } from '.';
+import { Limiter } from './limiter';
 
 type Resolved<T> = T extends () => Promise<infer U> ? U : T;
 
-type Primitive = string | number | boolean | ReloadableProvidedValue | null | undefined;
+type Primitive = string | number | boolean | null | undefined;
 
 type MappedResolved<T> = T extends Primitive ? T : { [k in keyof T]: MappedResolved<Resolved<T[k]>> };
 
