@@ -37,20 +37,18 @@ interface UserEvent {
 }
 
 // Create a publisher
-const publisher = new SQSPublisher<UserEvent>(
-  'https://sqs.us-west-2.amazonaws.com/123456789/my-queue' as QueueUrl
-);
+const publisher = new SQSPublisher<UserEvent>('https://sqs.us-west-2.amazonaws.com/123456789/my-queue' as QueueUrl);
 
 // Publish a single message
 await publisher.publish({
   userId: 'user-123',
-  action: 'login'
+  action: 'login',
 });
 
 // Publish multiple messages (automatically batched in chunks of 10)
 await publisher.publish([
   { userId: 'user-123', action: 'login' },
-  { userId: 'user-456', action: 'logout' }
+  { userId: 'user-456', action: 'logout' },
 ]);
 ```
 
@@ -65,8 +63,8 @@ await publisher.publish(
   {
     delay: {
       type: 'invisible',
-      seconds: 30 as Seconds
-    }
+      seconds: 30 as Seconds,
+    },
   }
 );
 ```
@@ -78,15 +76,15 @@ Schedule messages to be processed at a specific time, even beyond SQS's 15-minut
 ```typescript
 import { EpochMS } from '@paradoxical-io/types';
 
-const processAt = Date.now() + (3 * 24 * 60 * 60 * 1000); // 3 days from now
+const processAt = Date.now() + 3 * 24 * 60 * 60 * 1000; // 3 days from now
 
 await publisher.publish(
   { userId: 'user-123', action: 'reminder' },
   {
     delay: {
       type: 'processAfter',
-      epoch: processAt as EpochMS
-    }
+      epoch: processAt as EpochMS,
+    },
   }
 );
 ```
@@ -108,7 +106,7 @@ class OrderProcessor extends SQSConsumer<OrderEvent> {
   constructor() {
     super('https://sqs.us-west-2.amazonaws.com/123456789/orders' as QueueUrl, {
       maxNumberOfMessages: 5,
-      longPollWaitTimeSeconds: 20 as Seconds
+      longPollWaitTimeSeconds: 20 as Seconds,
     });
   }
 
@@ -122,7 +120,7 @@ class OrderProcessor extends SQSConsumer<OrderEvent> {
         return {
           type: 'retry-later',
           reason: 'Database temporarily unavailable',
-          retryInSeconds: 60 as Seconds
+          retryInSeconds: 60 as Seconds,
         };
       }
       throw error; // Non-retryable errors let the message go to DLQ
@@ -147,10 +145,10 @@ import { newConsumer, SQSConfig } from '@paradoxical-io/common-aws/sqs';
 
 const config: SQSConfig = {
   queueUrl: 'https://sqs.us-west-2.amazonaws.com/123456789/orders' as QueueUrl,
-  maxNumberOfMessages: 10
+  maxNumberOfMessages: 10,
 };
 
-const consumer = newConsumer<OrderEvent>(async (event) => {
+const consumer = newConsumer<OrderEvent>(async event => {
   console.log('Processing:', event);
   // Returning void acknowledges the message
 }, config);
@@ -209,6 +207,7 @@ async process(data: OrderEvent): Promise<MessageProcessorResult> {
 The retry delay will be calculated as: `min + 2^(publishCount)`
 
 Examples:
+
 - 1st retry: 1 + 2^1 = 3 seconds
 - 2nd retry: 1 + 2^2 = 5 seconds
 - 3rd retry: 1 + 2^3 = 9 seconds
@@ -245,6 +244,7 @@ await runSQS([consumer1, consumer2]);
 ```
 
 The `runSQS` function:
+
 - Starts all consumers concurrently
 - Registers shutdown signal handlers (SIGTERM, SIGINT)
 - Ensures graceful shutdown with proper cleanup
@@ -310,11 +310,13 @@ await docker.container.stop();
 Main class for publishing messages to SQS.
 
 **Constructor:**
+
 ```typescript
 new SQSPublisher<T>(queueUrl: string, sqs?: SQSClient)
 ```
 
 **Methods:**
+
 - `publish(data: T | T[], opts?: PublishOptions): Promise<void>` - Publish one or more messages
 
 ### SQSConsumer<T>
@@ -322,28 +324,32 @@ new SQSPublisher<T>(queueUrl: string, sqs?: SQSClient)
 Abstract base class for consuming messages.
 
 **Constructor:**
+
 ```typescript
 new SQSConsumer<T>(queueUrl: QueueUrl, opts?: Partial<Options>)
 ```
 
 **Abstract Methods:**
+
 - `process(data: T): Promise<MessageProcessorResult>` - Implement to handle messages
 
 **Methods:**
+
 - `start(): Promise<void>` - Start consuming messages
 - `stop(opts?: { timeoutMilli?: number; flush?: boolean }): void` - Stop the consumer
 - `adhoc(message: Message): Promise<void>` - Process a single message ad-hoc
 
 **Options:**
+
 ```typescript
 interface Options {
-  longPollWaitTimeSeconds: Seconds;      // Default: 20
-  maxNumberOfMessages: Max10;            // Default: 10
-  sqs: SQSClient;                        // Default: new SQSClient()
-  makeAvailableOnError: boolean;         // Default: false
-  timeProvider: TimeProvider;            // Default: defaultTimeProvider()
+  longPollWaitTimeSeconds: Seconds; // Default: 20
+  maxNumberOfMessages: Max10; // Default: 10
+  sqs: SQSClient; // Default: new SQSClient()
+  makeAvailableOnError: boolean; // Default: false
+  timeProvider: TimeProvider; // Default: defaultTimeProvider()
   maxVisibilityTimeoutSeconds?: Seconds; // Optional
-  proxyProvider?: ProxyQueueProvider;    // Optional
+  proxyProvider?: ProxyQueueProvider; // Optional
 }
 ```
 
@@ -384,11 +390,13 @@ interface RetryMessageLater {
 interface RepublishMessage {
   type: 'republish-later';
   reason: string;
-  retryInSeconds: Seconds | {
-    type: 'exponential-backoff';
-    max: Seconds;
-    min: Seconds;
-  };
+  retryInSeconds:
+    | Seconds
+    | {
+        type: 'exponential-backoff';
+        max: Seconds;
+        min: Seconds;
+      };
   expireFromFirstPublishMS?: Milliseconds;
 }
 ```

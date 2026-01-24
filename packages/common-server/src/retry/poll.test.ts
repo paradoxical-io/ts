@@ -1,9 +1,8 @@
-import { asMilli } from '@paradoxical-io/common';
+import { asMilli, retry } from '@paradoxical-io/common';
 import { safeExpect } from '@paradoxical-io/common-test';
 import { Milliseconds } from '@paradoxical-io/types';
 
 import { exponentialPoll, linearPoll } from './poll';
-import { retry } from './retryDecorator';
 
 class Retriable {
   fails = 0;

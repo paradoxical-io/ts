@@ -1,11 +1,14 @@
 import { safeExpect } from '@paradoxical-io/common-test';
+import { Brand } from '@paradoxical-io/types';
 
 import { autoResolve } from './resolver';
+
+export type User = Brand<string, 'User'>;
 
 test('auto resolves promises', async () => {
   const p = {
     foo: 1,
-    bar: () => new Promise<string>(r => r('')),
+    bar: (): Promise<User> | undefined => new Promise<User>(r => r('' as User)),
     biz: {
       baz: () => new Promise<number>(r => r(1)),
     },

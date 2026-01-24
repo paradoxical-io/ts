@@ -1,5 +1,6 @@
 /* eslint-disable no-console,@typescript-eslint/no-explicit-any */
 // make sure we allow all logging (even if the test runner says otherwise)
+
 process.env.PARADOX_LOG_LEVEL = 'info';
 
 // ensure log decorators always run

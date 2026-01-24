@@ -6,10 +6,9 @@ import {
   PutParameterCommand,
   SSMClient,
 } from '@aws-sdk/client-ssm';
-import { Arrays, Limiter } from '@paradoxical-io/common';
-import { log, retry as autoRetry } from '@paradoxical-io/common-server';
+import { Arrays, Limiter, retry as autoRetry } from '@paradoxical-io/common';
+import { log } from '@paradoxical-io/common-server';
 import { ErrorCode, ErrorWithCode, isErrorWithCode } from '@paradoxical-io/types';
-
 import retry = require('async-retry');
 
 export class ParameterStoreApi {

@@ -130,26 +130,26 @@ const configShape = (env: Env) => ({
     doc: 'Server port',
     format: 'port',
     default: 3000,
-    env: 'PORT'
+    env: 'PORT',
   },
   database: {
     host: {
       doc: 'Database host',
       format: String,
-      default: 'localhost'
+      default: 'localhost',
     },
     port: {
       doc: 'Database port',
       format: 'port',
-      default: 5432
-    }
+      default: 5432,
+    },
   },
   apiKey: {
     doc: 'API key',
     format: String,
     default: '',
-    sensitive: true
-  }
+    sensitive: true,
+  },
 });
 
 // Load from config/local.json or config/prod.json
@@ -248,12 +248,12 @@ const users = await reader.read<User>('/path/to/users.csv');
 const csv = new Csv<User>('/path/to/output.csv', [
   { id: 'name', title: 'Name' },
   { id: 'email', title: 'Email' },
-  { id: 'age', title: 'Age' }
+  { id: 'age', title: 'Age' },
 ]);
 
 await csv.write([
   { name: 'John', email: 'john@example.com', age: '30' },
-  { name: 'Jane', email: 'jane@example.com', age: '25' }
+  { name: 'Jane', email: 'jane@example.com', age: '25' },
 ]);
 ```
 
@@ -268,13 +268,13 @@ import { spawnPromise, runShell } from '@paradoxical-io/common-server';
 const { code, result } = await spawnPromise('npm', ['install'], {
   verbose: true,
   cwd: '/path/to/project',
-  acceptableErrorCodes: [0]
+  acceptableErrorCodes: [0],
 });
 
 // Run shell command
 const exitCode = await runShell('git status', {
   verbose: true,
-  cwd: process.cwd()
+  cwd: process.cwd(),
 });
 ```
 
@@ -347,6 +347,7 @@ The library respects several environment variables for configuration:
 ## API
 
 ### Logger
+
 - `log.info(msg)` - Log info message
 - `log.error(msg, error?)` - Log error with optional error object
 - `log.warn(msg, error?)` - Log warning
@@ -356,17 +357,20 @@ The library respects several environment variables for configuration:
 - `log.alarm(msg)` - Log alertable message
 
 ### Metrics
+
 - `Metrics.instance.increment(name, tags?)` - Increment counter
 - `Metrics.instance.timing(name, ms, tags?)` - Record timing
 - `Metrics.instance.gauge(name, value, tags?)` - Set gauge value
 
 ### Decorators
+
 - `@logMethod(options?)` - Log method calls with arguments
 - `@timed(options?)` - Track method execution time
 - `@retry(options?)` - Add retry logic to methods
 - `@sensitive(redaction?)` - Mark parameters as sensitive
 
 ### Tracing
+
 - `withNewTrace(fn, trace?, context?)` - Create new trace context
 - `traceID()` - Get current trace ID
 - `setCurrentUserId(userId)` - Set user ID in trace context

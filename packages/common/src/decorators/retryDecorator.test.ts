@@ -2,8 +2,6 @@ import { safeExpect } from '@paradoxical-io/common-test';
 
 import { retry } from './retryDecorator';
 
-// store a global so we can track failure counts
-
 class Retriable {
   fails = 0;
 

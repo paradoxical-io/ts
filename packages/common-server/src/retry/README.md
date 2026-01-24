@@ -77,7 +77,7 @@ class PaymentService {
     minTimeout: 1000,
     maxTimeout: 30000,
     // Bail immediately on validation errors
-    bailOn: (error: Error) => error.name === 'ValidationError'
+    bailOn: (error: Error) => error.name === 'ValidationError',
   })
   async processPayment(amount: number): Promise<PaymentResult> {
     return await this.paymentGateway.charge(amount);
@@ -105,7 +105,7 @@ async function waitForJobCompletion(jobId: string) {
       minTimeout: 100,
       maxTimeout: 5000,
       factor: 2, // Double the wait time on each retry
-      expiresAfter: asMilli(5, 'minutes')
+      expiresAfter: asMilli(5, 'minutes'),
     }
   );
 
@@ -136,7 +136,7 @@ async function waitForServerReady(url: string) {
       }
     },
     30000 as Milliseconds, // Expire after 30 seconds
-    1000 as Milliseconds   // Check every 1 second
+    1000 as Milliseconds // Check every 1 second
   );
 
   if (result.type === 'completed') {
@@ -154,6 +154,7 @@ async function waitForServerReady(url: string) {
 A method decorator that automatically retries async methods on failure.
 
 **Options:**
+
 - `retries?: number` - Maximum number of retry attempts (default: 10)
 - `minTimeout?: number` - Minimum wait time in milliseconds between retries (default: 1000)
 - `maxTimeout?: number` - Maximum wait time in milliseconds between retries (default: Infinity)
@@ -168,10 +169,12 @@ A method decorator that automatically retries async methods on failure.
 A specialized retry decorator for Axios HTTP requests.
 
 **Parameters:**
+
 - `skipCodes?: number[]` - HTTP status codes to skip retrying (default: `[400]`)
 - `options?: asyncRetry.Options` - Additional retry options
 
 **Defaults:**
+
 - `retries: 3`
 - `maxTimeout: 5000ms`
 - Automatically bails on specified HTTP status codes
@@ -181,11 +184,13 @@ A specialized retry decorator for Axios HTTP requests.
 Polls a function with exponential backoff until it returns a value or times out.
 
 **Parameters:**
+
 - `block: () => Promise<T | undefined>` - Function to poll; return `undefined` to continue polling
 - `options: asyncRetry.Options & { expiresAfter: Milliseconds }` - Retry options plus absolute expiration time
 - `time?: TimeProvider` - Optional time provider for testing
 
 **Returns:** `Promise<Result<T>>` where `Result<T>` is:
+
 - `{ type: 'completed', data: T }` - Successfully retrieved data
 - `{ type: 'timeout' }` - Polling timed out
 
@@ -194,6 +199,7 @@ Polls a function with exponential backoff until it returns a value or times out.
 Polls a function at fixed intervals until it returns a value or times out.
 
 **Parameters:**
+
 - `block: () => Promise<T | undefined>` - Function to poll; return `undefined` to continue polling
 - `expiresIn: Milliseconds` - Time until polling expires
 - `waitTime: Milliseconds` - Wait time between each poll attempt
@@ -204,16 +210,19 @@ Polls a function at fixed intervals until it returns a value or times out.
 ## Best Practices
 
 1. **Choose the Right Strategy:**
+
    - Use `@retry` for transient failures in method calls
    - Use `axiosRetry` for HTTP requests
    - Use `exponentialPoll` when you want to reduce load on the polled resource
    - Use `linearPoll` when you need predictable polling intervals
 
 2. **Set Appropriate Timeouts:**
+
    - Always set `expiresAfter` or `expiresIn` to prevent infinite polling
    - Configure `maxTimeout` to prevent excessive wait times
 
 3. **Handle Both Success and Timeout:**
+
    ```typescript
    const result = await exponentialPoll(...);
 
@@ -233,6 +242,7 @@ Polls a function at fixed intervals until it returns a value or times out.
 ## Dependencies
 
 This module depends on:
+
 - `async-retry` - For retry logic implementation
 - `@paradoxical-io/common` - For time utilities and helpers
 - `@paradoxical-io/types` - For type definitions
