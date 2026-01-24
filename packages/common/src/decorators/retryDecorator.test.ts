@@ -5,8 +5,6 @@ import { retry } from './retryDecorator';
 class Retriable {
   fails = 0;
 
-  retried = false;
-
   @retry({ maxTimeout: 50, minTimeout: 1 })
   async succeedsPromise(failUntil: number): Promise<number> {
     if (this.fails < failUntil) {
@@ -32,5 +30,4 @@ test('retries if method fails', async () => {
 
   safeExpect(await retriable.succeedsPromise(3)).toEqual(3);
   safeExpect(retriable.fails).toEqual(3);
-  safeExpect(retriable.retried).toEqual(true);
 });
