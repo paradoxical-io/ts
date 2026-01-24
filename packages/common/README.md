@@ -90,7 +90,7 @@ const shuffled = shuffleArray([1, 2, 3, 4, 5]);
 // Flatten 2D array by columns
 const flattened = columnFlatten([
   [0, 1],
-  [2, 3]
+  [2, 3],
 ]); // [0, 2, 1, 3]
 
 // Group array into chunks
@@ -105,14 +105,12 @@ const random = Arrays.random([1, 2, 3, 4]);
 ```typescript
 import { PubSub } from '@paradoxical-io/common';
 
-type Event =
-  | { type: 'user.created'; userId: string }
-  | { type: 'user.deleted'; userId: string };
+type Event = { type: 'user.created'; userId: string } | { type: 'user.deleted'; userId: string };
 
 const pubsub = new PubSub<Event>();
 
 // Subscribe to specific event types
-pubsub.subscribe('user.created', (event) => {
+pubsub.subscribe('user.created', event => {
   console.log(`User created: ${event.userId}`);
 });
 
@@ -123,13 +121,7 @@ await pubsub.publish({ type: 'user.created', userId: '123' });
 ### String and Text Utilities
 
 ```typescript
-import {
-  leftPad,
-  truncate,
-  camelCase,
-  titleCase,
-  formatAmount
-} from '@paradoxical-io/common';
+import { leftPad, truncate, camelCase, titleCase, formatAmount } from '@paradoxical-io/common';
 
 // Pad strings
 const padded = leftPad(42, 5, '0'); // "00042"
@@ -145,7 +137,7 @@ const title = titleCase('hello-world'); // "Hello World"
 const formatted = formatAmount({
   amount: 1234.56 as Amount,
   includeCommas: true,
-  includeDollarSign: true
+  includeDollarSign: true,
 }); // "$1,234.56"
 ```
 
@@ -196,11 +188,7 @@ interface User {
   };
 }
 
-const path = xpath<User>()
-  .field('profile')
-  .field('addresses')
-  .index(0)
-  .field('city');
+const path = xpath<User>().field('profile').field('addresses').index(0).field('city');
 
 console.log(path.path); // "$.profile.addresses[0].city"
 ```
@@ -227,10 +215,10 @@ const container = withCycles(manager => {
 ```typescript
 import { Retrier } from '@paradoxical-io/common';
 
-// Try once fast, then retry in background if fails
+// Try once fast, then retryDecorator in background if fails
 await Retrier.tryFast(
   () => unreliableApiCall(),
-  (error) => console.error('Failed after retries:', error),
+  error => console.error('Failed after retries:', error),
   () => console.log('Success!'),
   { retries: 3, minTimeout: 1000 }
 );

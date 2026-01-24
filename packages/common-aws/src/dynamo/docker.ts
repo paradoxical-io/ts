@@ -54,7 +54,7 @@ export async function newDynamoDocker(): Promise<DynamoDocker> {
   const dynamo = new DynamoDBClient({
     endpoint: base,
     region: 'us-west-2',
-    // added retry logic as there appears to be intermittent timeout errors with dynamodb-local
+    // added retryDecorator logic as there appears to be intermittent timeout errors with dynamodb-local
     retryStrategy: new ConfiguredRetryStrategy(4, (attempt: number) => 100 + attempt * 1000),
   });
 

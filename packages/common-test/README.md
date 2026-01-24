@@ -62,22 +62,17 @@ safeExpect(users).toContainEqual({ id: '123', name: 'John' });
 safeExpect(mockFn).toHaveBeenCalledWith('arg1', 'arg2');
 
 // Partial object matching with type safety
-safeExpect(response).toMatchObject(
-  safeObjectContaining<Response>({ status: 200 })
-);
+safeExpect(response).toMatchObject(safeObjectContaining<Response>({ status: 200 }));
 
 // Deep partial matching
 safeExpect(complexObject).toEqual(
   deepSafeObjectContaining<ComplexType>({
-    nested: { field: 'value' }
+    nested: { field: 'value' },
   })
 );
 
 // Match object excluding specific fields
-safeExpect(user).toMatchObjectExcluding(
-  { name: 'John', age: 30 },
-  ['createdAt', 'updatedAt']
-);
+safeExpect(user).toMatchObjectExcluding({ name: 'John', age: 30 }, ['createdAt', 'updatedAt']);
 
 // Conditional negation
 const shouldMatch = false;
@@ -99,13 +94,9 @@ expect(5).toBeWithinRange(1, 10);
 expect(someValue).logToCli(); // Debug utility for tests
 
 // Error matching for structured errors
-expect(error).matchesErrorWithCode(
-  { code: 'USER_NOT_FOUND', data: { userId: '123' } }
-);
+expect(error).matchesErrorWithCode({ code: 'USER_NOT_FOUND', data: { userId: '123' } });
 
-expect(error).matchesUserFacingMessage(
-  { code: 'ERROR', data: { userFacingMessage: 'Please try again' } }
-);
+expect(error).matchesUserFacingMessage({ code: 'ERROR', data: { userFacingMessage: 'Please try again' } });
 ```
 
 ### Environment Mocking
@@ -137,18 +128,24 @@ Handle async code with built-in waits:
 import { autoAdvanceTimers, retry } from '@paradoxical-io/common-test';
 
 // Auto-advance timers for code with internal waits
-it('handles retry logic', autoAdvanceTimers(async () => {
-  jest.useFakeTimers();
-  await functionWithInternalRetries();
-  // Timers automatically advanced during execution
-}));
+it(
+  'handles retryDecorator logic',
+  autoAdvanceTimers(async () => {
+    jest.useFakeTimers();
+    await functionWithInternalRetries();
+    // Timers automatically advanced during execution
+  })
+);
 
 // Retry flaky tests
-it('eventually succeeds', retry(3)(async () => {
-  // Test code that might be flaky
-  // Will retry up to 3 times before failing
-  await someFlakeyOperation();
-}));
+it(
+  'eventually succeeds',
+  retry(3)(async () => {
+    // Test code that might be flaky
+    // Will retryDecorator up to 3 times before failing
+    await someFlakeyOperation();
+  })
+);
 ```
 
 ### Test File Loading
@@ -190,10 +187,7 @@ Add test start logging to your Jest configuration:
 ```javascript
 // jest.config.js
 module.exports = {
-  reporters: [
-    'default',
-    require.resolve('@paradoxical-io/common-test/dist/jest/reporter.js'),
-  ],
+  reporters: ['default', require.resolve('@paradoxical-io/common-test/dist/jest/reporter.js')],
 };
 ```
 
@@ -228,7 +222,7 @@ module.exports = {
 
 ### Test Utilities
 
-- `loadTestFile<T>(file, root?)` - Load JSON file from __test__ directory
+- `loadTestFile<T>(file, root?)` - Load JSON file from **test** directory
 - `autoAdvanceTimers<T>(callback)` - Auto-advance Jest fake timers during async execution
 - `retry(times)` - Retry test function multiple times before failing
 

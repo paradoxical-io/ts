@@ -2,7 +2,7 @@ import asyncRetry = require('async-retry');
 
 export class Retrier {
   /**
-   * Try a promise ONCE and if it fails kick it into a non awaited retry mode
+   * Try a promise ONCE and if it fails kick it into a non awaited retryDecorator mode
    *
    * This allows you to try quickly and then dangle a promise separately outside of the await context to complete
    * @param p

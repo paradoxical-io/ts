@@ -4,7 +4,7 @@ import { Seconds } from '@paradoxical-io/types';
 
 import { determineRetryDelay, RepublishMessage } from './consumer';
 
-test('no exponential uses retry value', () => {
+test('no exponential uses retryDecorator value', () => {
   safeExpect(determineRetryDelay({ retryInSeconds: 5 as Seconds } as RepublishMessage, 5)).toEqual(5 as Seconds);
 });
 

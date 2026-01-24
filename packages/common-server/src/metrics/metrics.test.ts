@@ -1,16 +1,16 @@
 /* eslint-disable no-console,@typescript-eslint/no-explicit-any */
 // make sure we allow all logging (even if the test runner says otherwise)
-process.env.PARADOX_LOG_LEVEL = 'info';
-
-// ensure log decorators always run
-process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
-
 import { metricsProvider, timed as timedRaw } from '@paradoxical-io/common';
 import { extendJest, safeExpect } from '@paradoxical-io/common-test';
 
 import { logMethod } from '../logger';
 import { Metrics } from './metrics';
 import { timed } from './timingDecorator';
+
+process.env.PARADOX_LOG_LEVEL = 'info';
+
+// ensure log decorators always run
+process.env.PARADOX_SKIP_LOG_DECORATORS = 'false';
 
 extendJest();
 

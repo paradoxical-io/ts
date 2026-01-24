@@ -6,22 +6,47 @@ export interface Metrics {
 
 const customMetrics = Symbol('paradoxical:metrics');
 
+interface MetricsProviderMetadata {
+  prop: string | symbol;
+  method: string | symbol | number;
+}
+
 /**
  * Add an annotation on a logger instance in a class to use as the logging instance for all annotation logMethods
  * allows you to capture context in a class and have that context be propagated through annotation logging.
  */
 export function metricsProvider(target: Object, prop: string | symbol) {
-  Reflect.defineMetadata(customMetrics, prop, target);
+  return customMetricsProvider<Metrics>('timing')(target, prop);
 }
 
-function resolveMetrics(target: object): Metrics | undefined {
-  const property = Reflect.getMetadata(customMetrics, target) ?? 'metrics';
+/**
+ * A metrics provider that uses a specific method on the metrics instance
+ * @param method
+ */
+export function customMetricsProvider<T extends object>(method: keyof T) {
+  return (target: Object, prop: string | symbol) => {
+    Reflect.defineMetadata(
+      customMetrics,
+      {
+        method,
+        prop,
+      } satisfies MetricsProviderMetadata,
+      target
+    );
+  };
+}
+
+function resolveMetrics(target: object): Metrics['timing'] | undefined {
+  const meta: MetricsProviderMetadata = Reflect.getMetadata(customMetrics, target) ?? {
+    prop: 'metrics',
+    method: 'timing',
+  };
 
   // @ts-ignore
-  const metrics = target?.[property] as Metrics;
+  const metrics = target?.[meta.prop];
 
-  if (metrics && typeof metrics === 'object' && typeof metrics.timing === 'function') {
-    return metrics;
+  if (metrics && typeof metrics === 'object' && typeof metrics[meta.method] === 'function') {
+    return metrics[meta.method].bind(metrics);
   }
 
   return undefined;
@@ -61,7 +86,9 @@ export function timed({
     const warningsByClass = new Set<string>();
     // editing the descriptor/value parameter
     descriptor!.value = function () {
-      const resolvedMetrics: Metrics | undefined = metrics ?? resolveMetrics(this);
+      const resolvedMetrics: Metrics['timing'] | undefined = metrics
+        ? metrics['timing'].bind(metrics)
+        : resolveMetrics(this);
 
       const logged = warningsByClass.has(this.constructor.name);
       // only log once
@@ -75,7 +102,7 @@ export function timed({
 
       const timingResult = () => {
         try {
-          resolvedMetrics?.timing(metricName, preciseTimeMilli() - start, {
+          resolvedMetrics?.(metricName, preciseTimeMilli() - start, {
             ...tags,
             name: `${target.constructor?.name}.${method}`,
           });

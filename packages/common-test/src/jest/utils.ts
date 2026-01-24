@@ -2,7 +2,7 @@
  * Jest has decent support for fake timers if the test actually wants to verify that the wait happens,
  * and can manually control the individual time moving aspects.
  *
- * Where it becomes more limited is when testing functions that have built in waits (retry loops, waiting for something to finish, etc). Wrapping the test
+ * Where it becomes more limited is when testing functions that have built in waits (retryDecorator loops, waiting for something to finish, etc). Wrapping the test
  * logic with this function will cause all timers to automatically and immediately resolve.
  *
  * @note See App P2P.test.ts for example usages (the p2p control functions internally use waitForTransactionToSettle which has built in waits and retries)

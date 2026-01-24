@@ -101,7 +101,7 @@ test('retrys message to queue', async () => {
       }
 
       if (foundData.get(data)!.length < 3) {
-        return { retryInSeconds: 1 as Seconds, type: 'retry-later', reason: 'not done  yet' };
+        return { retryInSeconds: 1 as Seconds, type: 'retryDecorator-later', reason: 'not done  yet' };
       }
 
       return undefined;
@@ -231,7 +231,7 @@ test('retrys message via publish later to queue up to max time', async () => {
       expect(Array.from(foundData.keys()).sort()).toEqual(content.sort());
 
       // we retried each message 1 time because they auto expired from the first republish time
-      // total count is 2 (initial + retry)
+      // total count is 2 (initial + retryDecorator)
       expect(Array.from(foundData.values()).flatMap(i => i).length).toEqual(content.length * 2);
     } finally {
       await docker.container.close();
