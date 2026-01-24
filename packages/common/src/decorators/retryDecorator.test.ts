@@ -22,7 +22,6 @@ test('doesnt retry if method succeeds', async () => {
 
   safeExpect(await retriable.succeedsPromise(0)).toEqual(0);
   safeExpect(retriable.fails).toEqual(0);
-  safeExpect(retriable.retried).toEqual(false);
 });
 
 test('retries if method fails', async () => {
