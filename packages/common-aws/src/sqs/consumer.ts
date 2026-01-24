@@ -64,17 +64,17 @@ interface StopParams {
 /**
  * If a consumer wants to defer a message return this from the consumer
  *
- * Warning: retries do count against instances of delivery, so if you retryDecorator X times and the redrive policy
+ * Warning: retries do count against instances of delivery, so if you retry X times and the redrive policy
  * is to DLQ after X deliveries, the message will DLQ
  */
 export interface RetryMessageLater {
-  type: 'retryDecorator-later';
+  type: 'retry-later';
   reason: string;
   retryInSeconds: Seconds;
 }
 
 /**
- * A different version of retryDecorator which re-publishes the original message (potentially with a delay)
+ * A different version of retry which re-publishes the original message (potentially with a delay)
  * and ACKS the original message. This means that retrying of messages don't count towards DLQ counts
  */
 export interface RepublishMessage {
@@ -339,7 +339,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
         Metrics.instance.increment('sqs.batch_failure', { queue: this.queueUrl });
 
-        // retryDecorator in 1 second to prevent spamming on unknown failures
+        // retry in 1 second to prevent spamming on unknown failures
         await sleep(1000 as Milliseconds);
       }
     }
@@ -443,7 +443,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
     if (result && message.ReceiptHandle) {
       switch (result.type) {
-        case 'retryDecorator-later': {
+        case 'retry-later': {
           log.info(
             `Requested to retry event later. Making message visible in ${result.retryInSeconds} seconds. Reason: ${result.reason}`
           );

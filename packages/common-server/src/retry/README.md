@@ -31,7 +31,7 @@ import { retry } from '@paradoxical-io/common-server';
 class DatabaseService {
   @retry({ retries: 3, minTimeout: 100, maxTimeout: 5000 })
   async fetchUser(userId: string): Promise<User> {
-    // This method will automatically retryDecorator up to 3 times
+    // This method will automatically retry up to 3 times
     // with exponential backoff between 100ms and 5000ms
     const response = await this.db.query('SELECT * FROM users WHERE id = ?', [userId]);
     return response.rows[0];
@@ -48,7 +48,7 @@ import { axiosRetry } from '@paradoxical-io/common-server';
 import axios from 'axios';
 
 class ApiClient {
-  // Retries on 5xx errors, but skips retryDecorator on 400 Bad Request
+  // Retries on 5xx errors, but skips retry on 400 Bad Request
   @axiosRetry([400])
   async fetchData(endpoint: string): Promise<Data> {
     const response = await axios.get(`https://api.example.com/${endpoint}`);
@@ -104,7 +104,7 @@ async function waitForJobCompletion(jobId: string) {
       retries: 10,
       minTimeout: 100,
       maxTimeout: 5000,
-      factor: 2, // Double the wait time on each retryDecorator
+      factor: 2, // Double the wait time on each retry
       expiresAfter: asMilli(5, 'minutes'),
     }
   );

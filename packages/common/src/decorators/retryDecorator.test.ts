@@ -19,7 +19,7 @@ class Retriable {
   }
 }
 
-test('doesnt retryDecorator if method succeeds', async () => {
+test('doesnt retry if method succeeds', async () => {
   const retriable = new Retriable();
 
   safeExpect(await retriable.succeedsPromise(0)).toEqual(0);

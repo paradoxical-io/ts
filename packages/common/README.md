@@ -215,7 +215,7 @@ const container = withCycles(manager => {
 ```typescript
 import { Retrier } from '@paradoxical-io/common';
 
-// Try once fast, then retryDecorator in background if fails
+// Try once fast, then retry in background if fails
 await Retrier.tryFast(
   () => unreliableApiCall(),
   error => console.error('Failed after retries:', error),

@@ -1,9 +1,9 @@
 import asyncRetry = require('async-retry');
 
 /**
- * Managed retryDecorator annotation for a method for async methods. Does not work for sync methods
- * and will ignore the retryDecorator
- * @param opts Async retryDecorator options. To stop retrying early on error use the bailOn callback
+ * Managed retry annotation for a method for async methods. Does not work for sync methods
+ * and will ignore the retry
+ * @param opts Async retry options. To stop retrying early on error use the bailOn callback
  *
  */
 export function retry(opts?: asyncRetry.Options & { bailOn?: (e: Error) => boolean }) {

@@ -14,7 +14,7 @@ class NoDataError extends Error {}
 /**
  * Supports exponential polling backoff
  * @param block
- * @param opts The retryDecorator options for exponential backoff along with when the polling expires
+ * @param opts The retry options for exponential backoff along with when the polling expires
  * @param time
  */
 export async function exponentialPoll<T>(

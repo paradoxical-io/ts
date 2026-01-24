@@ -12,7 +12,6 @@ export * from './logger';
 export * from './metrics';
 export * from './path';
 export * from './process';
-export * from './retry/retryDecorator';
 export * from './sftp';
 export * from './test';
 export * from './trace';

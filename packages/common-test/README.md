@@ -129,7 +129,7 @@ import { autoAdvanceTimers, retry } from '@paradoxical-io/common-test';
 
 // Auto-advance timers for code with internal waits
 it(
-  'handles retryDecorator logic',
+  'handles retry logic',
   autoAdvanceTimers(async () => {
     jest.useFakeTimers();
     await functionWithInternalRetries();
@@ -142,7 +142,7 @@ it(
   'eventually succeeds',
   retry(3)(async () => {
     // Test code that might be flaky
-    // Will retryDecorator up to 3 times before failing
+    // Will retry up to 3 times before failing
     await someFlakeyOperation();
   })
 );

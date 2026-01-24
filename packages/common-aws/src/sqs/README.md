@@ -118,7 +118,7 @@ class OrderProcessor extends SQSConsumer<OrderEvent> {
       if (error.isRetryable) {
         // Retry after 60 seconds
         return {
-          type: 'retryDecorator-later',
+          type: 'retry-later',
           reason: 'Database temporarily unavailable',
           retryInSeconds: 60 as Seconds,
         };
@@ -166,7 +166,7 @@ Changes message visibility to retry later. Counts against DLQ delivery attempts:
 async process(data: OrderEvent): Promise<MessageProcessorResult> {
   if (shouldRetry) {
     return {
-      type: 'retryDecorator-later',
+      type: 'retry-later',
       reason: 'Temporary service unavailable',
       retryInSeconds: 30 as Seconds
     };
@@ -382,7 +382,7 @@ interface SQSEvent<T> {
 type MessageProcessorResult = void | RetryMessageLater | RepublishMessage;
 
 interface RetryMessageLater {
-  type: 'retryDecorator-later';
+  type: 'retry-later';
   reason: string;
   retryInSeconds: Seconds;
 }

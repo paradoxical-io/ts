@@ -101,7 +101,7 @@ class ApiClient {
     return await fetch('https://api.example.com/data');
   }
 
-  @axiosRetry([400, 404]) // Skip retryDecorator for specific status codes
+  @axiosRetry([400, 404]) // Skip retry for specific status codes
   async postData(payload: object) {
     return await axios.post('/api/endpoint', payload);
   }
