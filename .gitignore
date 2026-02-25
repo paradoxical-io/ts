@@ -68,3 +68,4 @@ paradox.log
 .keys/
 
 __trace
+.claude/settings.local.json
