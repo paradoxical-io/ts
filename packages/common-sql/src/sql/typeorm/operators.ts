@@ -1,6 +1,6 @@
 import { XPath } from '@paradoxical-io/common';
 import {
-  ConnectionOptions,
+  DataSourceOptions,
   FindOperator,
   LessThan,
   LessThanOrEqual,
@@ -18,7 +18,7 @@ import { DateUtils } from 'typeorm/util/DateUtils';
 import { ColumnName } from './queryBuilderHelpers';
 
 export class CustomOperators {
-  constructor(private driver: ConnectionOptions) {}
+  constructor(private driver: DataSourceOptions) {}
 
   /**
    * sqlite does not have a date field, internally they are stored as a string.
@@ -87,32 +87,32 @@ export class CustomOperators {
     return param;
   }
 
-  MoreThanDate(date: Date): FindOperator<Date | string> {
+  MoreThanDate(date: Date): FindOperator<Date> {
     if (this.driver.type === 'sqlite') {
-      return MoreThan(this.sqliteFormat(date));
+      return MoreThan(this.sqliteFormat(date)) as unknown as FindOperator<Date>;
     }
     return MoreThan(date);
   }
 
-  MoreThanOrEqualDate(date: Date): FindOperator<Date | string> {
+  MoreThanOrEqualDate(date: Date): FindOperator<Date> {
     if (this.driver.type === 'sqlite') {
-      return MoreThanOrEqual(this.sqliteFormat(date));
+      return MoreThanOrEqual(this.sqliteFormat(date)) as unknown as FindOperator<Date>;
     }
 
     return MoreThanOrEqual(date);
   }
 
-  LessThanDate(date: Date): FindOperator<Date | string> {
+  LessThanDate(date: Date): FindOperator<Date> {
     if (this.driver.type === 'sqlite') {
-      return LessThan(this.sqliteFormat(date));
+      return LessThan(this.sqliteFormat(date)) as unknown as FindOperator<Date>;
     }
 
     return LessThan(date);
   }
 
-  LessThanOrEqualDate(date: Date): FindOperator<Date | string> {
+  LessThanOrEqualDate(date: Date): FindOperator<Date> {
     if (this.driver.type === 'sqlite') {
-      return LessThanOrEqual(this.sqliteFormat(date));
+      return LessThanOrEqual(this.sqliteFormat(date)) as unknown as FindOperator<Date>;
     }
 
     return LessThanOrEqual(date);

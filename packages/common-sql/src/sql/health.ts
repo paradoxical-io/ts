@@ -1,8 +1,8 @@
 import { HealthCheck } from '@paradoxical-io/common-server';
-import { Connection } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 export class DbHealth implements HealthCheck {
-  constructor(private conn: Connection) {}
+  constructor(private conn: DataSource) {}
 
   async healthCheck(): Promise<boolean> {
     // if the migrations query succeeds, we are connected and passing

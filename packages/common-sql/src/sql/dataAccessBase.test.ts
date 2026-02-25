@@ -1,6 +1,6 @@
 import { xpath } from '@paradoxical-io/common';
 import { safeExpect } from '@paradoxical-io/common-test';
-import { Column, Connection, Entity, PrimaryColumn, PrimaryGeneratedColumn, Repository } from 'typeorm';
+import { Column, DataSource, Entity, PrimaryColumn, PrimaryGeneratedColumn, Repository } from 'typeorm';
 
 import { ConnectionFactory } from './connectionFactory';
 import { ColumnNames, CrudBase } from './crudBase';
@@ -48,7 +48,7 @@ interface Data {
 }
 
 class TestRepo extends SqlDataAccessBase {
-  public constructor(conn: Connection) {
+  public constructor(conn: DataSource) {
     super(conn);
   }
 
@@ -60,7 +60,7 @@ class TestRepo extends SqlDataAccessBase {
     return this.getRepo<TestModelNumericColumn>(TestModelNumericColumn);
   }
 
-  field1Xpath(value: string): Promise<TestModel | undefined> {
+  field1Xpath(value: string): Promise<TestModel | null> {
     const columns = getColumnNameFunction<TestModel>(TestModel);
     return this.testModel()
       .createQueryBuilder()
