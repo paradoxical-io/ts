@@ -1,7 +1,7 @@
 import { epochNow } from '@paradoxical-io/common';
 import { safeExpect } from '@paradoxical-io/common-test';
 import { EpochMS } from '@paradoxical-io/types';
-import { Column, Connection, Entity, PrimaryGeneratedColumn, Repository } from 'typeorm';
+import { Column, DataSource, Entity, PrimaryGeneratedColumn, Repository } from 'typeorm';
 
 import { ConnectionFactory } from '../connectionFactory';
 import { ColumnNames, CrudBase } from '../crudBase';
@@ -22,7 +22,7 @@ class TestModel extends CrudBase {
 }
 
 class TestRepo extends SqlDataAccessBase {
-  public constructor(conn: Connection) {
+  public constructor(conn: DataSource) {
     super(conn);
   }
 
@@ -53,9 +53,9 @@ describe('date operators', () => {
 
     await db.testModel().save({ col1: new Date(modelCol1Epoch) });
 
-    const result = await db.testModel().findOne({ col1: db.getOperators().MoreThanDate(new Date(now)) });
+    const result = await db.testModel().findOne({ where: { col1: db.getOperators().MoreThanDate(new Date(now)) } });
 
-    safeExpect(result).negated(!inWhereClause).toBeDefined();
+    safeExpect(result).negated(!inWhereClause).toBeTruthy();
   });
 
   test.each([
@@ -67,9 +67,11 @@ describe('date operators', () => {
 
     await db.testModel().save({ col1: new Date(modelCol1Epoch) });
 
-    const result = await db.testModel().findOne({ col1: db.getOperators().MoreThanOrEqualDate(new Date(now)) });
+    const result = await db
+      .testModel()
+      .findOne({ where: { col1: db.getOperators().MoreThanOrEqualDate(new Date(now)) } });
 
-    safeExpect(result).negated(!inWhereClause).toBeDefined();
+    safeExpect(result).negated(!inWhereClause).toBeTruthy();
   });
 
   test.each([
@@ -81,9 +83,9 @@ describe('date operators', () => {
 
     await db.testModel().save({ col1: new Date(modelCol1Epoch) });
 
-    const result = await db.testModel().findOne({ col1: db.getOperators().LessThanDate(new Date(now)) });
+    const result = await db.testModel().findOne({ where: { col1: db.getOperators().LessThanDate(new Date(now)) } });
 
-    safeExpect(result).negated(!inWhereClause).toBeDefined();
+    safeExpect(result).negated(!inWhereClause).toBeTruthy();
   });
 
   test.each([
@@ -95,9 +97,11 @@ describe('date operators', () => {
 
     await db.testModel().save({ col1: new Date(modelCol1Epoch) });
 
-    const result = await db.testModel().findOne({ col1: db.getOperators().LessThanOrEqualDate(new Date(now)) });
+    const result = await db
+      .testModel()
+      .findOne({ where: { col1: db.getOperators().LessThanOrEqualDate(new Date(now)) } });
 
-    safeExpect(result).negated(!inWhereClause).toBeDefined();
+    safeExpect(result).negated(!inWhereClause).toBeTruthy();
   });
 });
 

@@ -1,8 +1,8 @@
 import { isRemote, log, Metrics } from '@paradoxical-io/common-server';
-import { Connection } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 export class SqlStats {
-  constructor(private name: string, private conn: Connection) {}
+  constructor(private name: string, private conn: DataSource) {}
 
   /**
    * Monitors the lag time to issue a select 1 query

@@ -1,6 +1,6 @@
 import { Limiter } from '@paradoxical-io/common';
 import { ErrorCode, ErrorWithCode } from '@paradoxical-io/types';
-import { Connection, EntityManager, ObjectLiteral, QueryRunner, Repository } from 'typeorm';
+import { DataSource, EntityManager, ObjectLiteral, QueryRunner, Repository } from 'typeorm';
 import { DatabaseType } from 'typeorm/driver/types/DatabaseType';
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -25,8 +25,8 @@ export abstract class SqlDataAccessBase {
 
   private readonly driver: DatabaseType;
 
-  protected constructor(protected conn: Connection) {
-    this.driver = conn.driver.options.type;
+  protected constructor(protected conn: DataSource) {
+    this.driver = conn.options.type;
 
     // sqlite only supports a single connection
     // so parallel transactions will always fail
@@ -34,7 +34,7 @@ export abstract class SqlDataAccessBase {
     // so we can queue off promises under the hood
     // basically its implementing https://github.com/typeorm/typeorm/issues/307
     // create the wrapper here so we can have a single closed over instance of the limiter
-    if (conn.driver.options.type === 'sqlite') {
+    if (conn.options.type === 'sqlite') {
       const limiter = new Limiter({ maxConcurrent: 1 });
       this.transactionWrapper = <T>(p: () => Promise<T>) => limiter.wrap(p);
     } else {
@@ -45,7 +45,7 @@ export abstract class SqlDataAccessBase {
   }
 
   async close() {
-    await this.conn.close();
+    await this.conn.destroy();
   }
 
   protected getRepo = <T extends ObjectLiteral>(f: Function): Repository<T> => {
@@ -150,7 +150,8 @@ export abstract class SqlDataAccessBase {
     const repo = this.getRepo<T>(modelType);
     await this.ignoreDuplicates(() => repo.insert(model));
 
-    return repo.findOneOrFail(model.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return repo.findOneOrFail({ where: { id: model.id } as any });
   }
 
   /**

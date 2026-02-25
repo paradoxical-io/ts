@@ -1,5 +1,5 @@
 import { Brand } from '@paradoxical-io/types';
-import { SelectQueryBuilder } from 'typeorm';
+import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 
 import { ColumnNames, CrudBase } from '../crudBase';
 
@@ -87,7 +87,7 @@ export function sum(cn: ColumnName | string) {
  * @param varName           The name of the variable. For example ':userID'. Must start with a colon.
  * @param value             The value for the variable
  */
-export function andWhere<T>(
+export function andWhere<T extends ObjectLiteral>(
   query: SelectQueryBuilder<T>,
   columnOperand: ColumnName | ColumnDerivedValue,
   operator: '=' | '<' | '<=' | '>' | '>=' | string,

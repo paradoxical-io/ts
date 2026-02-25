@@ -1,6 +1,5 @@
 import { currentEnvironment, isLocal, isRemote, log, Metrics } from '@paradoxical-io/common-server';
-import { Pool } from 'mysql';
-import { Connection, createConnection } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { MysqlDriver } from 'typeorm/driver/mysql/MysqlDriver';
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions';
 
@@ -40,7 +39,7 @@ export class ConnectionFactory {
    */
   constructor(private entities?: Array<{ new (): CrudBase }>) {}
 
-  async mysql(options: MySQLOptions): Promise<Connection> {
+  async mysql(options: MySQLOptions): Promise<DataSource> {
     const defaultConnectionSize = currentEnvironment() === 'prod' ? 20 : 5;
 
     const envVar = process.env.PARADOX_MYSQL_CONNECTION_POOL_SIZE;
@@ -106,7 +105,7 @@ export class ConnectionFactory {
     }
 
     try {
-      const conn = await createConnection({
+      const dataSource = new DataSource({
         type: 'mysql',
         host: opts.hostname,
         port: opts.port,
@@ -132,20 +131,23 @@ export class ConnectionFactory {
         maxQueryExecutionTime: 2000,
 
         // these get passed to the underlying driver
-        // https://github.com/mysqljs/mysql#pooling-connections
+        // https://github.com/sidorares/node-mysql2#using-connection-pools
         extra: {
           connectionLimit: opts.connectionCount,
         },
       });
 
+      const conn = await dataSource.initialize();
+
       if (conn.driver instanceof MysqlDriver) {
         const tags = { schema: opts.database || 'unknown' };
-        const pool: Pool = (conn.driver as MysqlDriver).pool;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pool: any = (conn.driver as MysqlDriver).pool;
 
         const idMap: { [id: string]: number } = {};
 
-        // attach listeners on the mysql driver for metrics on pool activity
-        pool.on('acquire', conn => {
+        // attach listeners on the mysql2 driver for metrics on pool activity
+        pool.on('acquire', (conn: { threadId?: number }) => {
           if (conn.threadId) {
             idMap[conn.threadId] = new Date().getTime();
           }
@@ -153,7 +155,7 @@ export class ConnectionFactory {
           Metrics.instance.increment('mysql.connection.active', tags);
         });
 
-        pool.on('release', conn => {
+        pool.on('release', (conn: { threadId?: number }) => {
           Metrics.instance.increment('mysql.connection.active', -1, tags);
 
           if (conn.threadId && idMap[conn.threadId]) {
@@ -164,7 +166,6 @@ export class ConnectionFactory {
 
         pool.on('enqueue', () => Metrics.instance.increment('mysql.connection.enqueue', tags));
         pool.on('connection', () => Metrics.instance.increment('mysql.connection.new_connection', tags));
-        pool.on('error', () => Metrics.instance.increment('mysql.connection.error', tags));
       }
       return conn;
     } catch (err) {
@@ -176,7 +177,7 @@ export class ConnectionFactory {
     }
   }
 
-  async sqlite(synchronize = true): Promise<Connection> {
+  async sqlite(synchronize = true): Promise<DataSource> {
     const id = Math.random().toString();
 
     const name = process.env.JEST_TEST ? `${expect.getState().currentTestName}_${new Date().getTime()}_${id}` : id;
@@ -186,15 +187,16 @@ export class ConnectionFactory {
     // if the env var is set will dump the sqlite db to disk, otherwise will use it in memory
     const dbName = process.env.PARADOX_DEBUG_SQLITE_DB ? path : ':memory:';
 
-    const conn = await createConnection({
+    const dataSource = new DataSource({
       type: 'sqlite',
-      name: id,
       database: dbName,
       logging: process.env.PARADOX_SQLITE_LOGGING === undefined ? ['warn', 'info', 'log'] : 'all',
       synchronize: false,
       maxQueryExecutionTime: 1000,
       entities: this.entities,
     });
+
+    const conn = await dataSource.initialize();
 
     if (synchronize) {
       await conn.synchronize();

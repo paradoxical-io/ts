@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(cat:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebSearch",
+      "Bash(yarn install:*)",
+      "Bash(node -e:*)",
+      "Bash(yarn compile:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn lint:*)"
     ],
     "deny": [],
     "ask": []
