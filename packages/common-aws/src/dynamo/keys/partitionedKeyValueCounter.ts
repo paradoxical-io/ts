@@ -7,9 +7,9 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { Arrays, propertyOf } from '@paradoxical-io/common';
-import { log } from '@paradoxical-io/common-server';
 import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
+import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
 
@@ -38,18 +38,24 @@ export class PartitionedKeyValueCounter {
 
   private readonly tableName: string;
 
+  private readonly logger: Logger;
+
   constructor({
     dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('partitioned_keys'),
+    monitoring = noOpMonitoring(),
   }: {
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
+    monitoring?: Monitoring;
   }) {
     assertTableNameValid(tableName);
 
     this.tableName = tableName;
 
     this.dynamo = dynamo;
+
+    this.logger = monitoring.logger;
   }
 
   async get<P extends string>(id: CompoundKey<P, number>): Promise<number | undefined> {
@@ -171,7 +177,10 @@ export class PartitionedKeyValueCounter {
 
       return Number(result.Attributes![propertyOf<PartitionedKeyCounterTableDao>('count')]!.N);
     } catch (e) {
-      log.error(`failed to increment ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`, e);
+      this.logger.error(
+        `failed to increment ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`,
+        e
+      );
 
       throw e;
     }
@@ -193,7 +202,10 @@ export class PartitionedKeyValueCounter {
     try {
       await this.dynamo.send(command);
     } catch (e) {
-      log.error(`failed to delete ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`, e);
+      this.logger.error(
+        `failed to delete ${JSON.stringify({ sortKey: data.sortKey, partitionKey: data.partitionKey })}`,
+        e
+      );
 
       throw e;
     }

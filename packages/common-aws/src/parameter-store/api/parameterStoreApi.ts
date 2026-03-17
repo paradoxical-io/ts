@@ -7,12 +7,17 @@ import {
   SSMClient,
 } from '@aws-sdk/client-ssm';
 import { Arrays, Limiter, retry as autoRetry } from '@paradoxical-io/common';
-import { log } from '@paradoxical-io/common-server';
 import { ErrorCode, ErrorWithCode, isErrorWithCode } from '@paradoxical-io/types';
 import retry = require('async-retry');
 
+import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
+
 export class ParameterStoreApi {
-  constructor(private ssm: SSMClient) {}
+  private readonly logger: Logger;
+
+  constructor(private ssm: SSMClient, monitoring: Monitoring = noOpMonitoring()) {
+    this.logger = monitoring.logger;
+  }
 
   async listParameters(): Promise<string[]> {
     const params: string[] = [];
@@ -112,7 +117,7 @@ export class ParameterStoreApi {
       },
       {
         onRetry: (error, num) => {
-          log.warn(`Unable to load parameter store value ${name}. Retry attempt ${num}. Trying again`, error);
+          this.logger.warn(`Unable to load parameter store value ${name}. Retry attempt ${num}. Trying again`, error);
         },
       }
     );

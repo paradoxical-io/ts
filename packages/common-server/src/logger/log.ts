@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
-import { asMilli, pruneUndefined, SafeJson } from '@paradoxical-io/common';
+import { asMilli, PathRedaction, pruneUndefined, redact, redactKey, SafeJson } from '@paradoxical-io/common';
 import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
-import LRUCache from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import { serializeError } from 'serialize-error';
 import * as winston from 'winston';
 import { LoggerOptions } from 'winston';
 
-import { PathRedaction, redact, redactKey } from '../../../common/src/utils/redaction';
 import { isLocal } from '../env';
 import { md5 } from '../hash';
 import { isAxiosError } from '../http';
@@ -101,7 +100,7 @@ export class Logger {
 
   private readonly customMetricsTags: Tags;
 
-  private onceKeys = new LRUCache<string, undefined>({ max: 15000, maxAge: asMilli(1, 'hours') });
+  private onceKeys = new LRUCache<string, boolean>({ max: 15000, ttl: asMilli(1, 'hours') });
 
   constructor(
     ctx: Context = {},
@@ -258,7 +257,7 @@ export class Logger {
     } else {
       this.with({ once: true, onceKey: uniqueKey }).info(msg);
 
-      this.onceKeys.set(uniqueKey, undefined);
+      this.onceKeys.set(uniqueKey, true);
     }
   }
 

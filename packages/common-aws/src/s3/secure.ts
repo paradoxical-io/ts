@@ -14,13 +14,14 @@ import {
   EncryptDecrypt,
   EncryptedData,
   EncryptionParams,
-  log,
   Secret,
   SecureStore,
   SecureVersion,
 } from '@paradoxical-io/common-server';
 import { Brand, ErrorCode, ErrorWithCode } from '@paradoxical-io/types';
 import Joi from 'joi';
+
+import { Logger, Monitoring, noOpMonitoring } from '../monitoring';
 
 export type DEK = Brand<string, 'DataEncryptionKey'>;
 
@@ -61,24 +62,29 @@ export class S3SecureStore implements SecureStore {
 
   private readonly kms: KMSClient;
 
+  private readonly logger: Logger;
+
   constructor({
     kms = new KMSClient(),
     kmsKeyID,
     s3 = new S3Client(),
     s3Bucket,
     crypto = new EncryptDecrypt(),
+    monitoring = noOpMonitoring(),
   }: {
     kms?: KMSClient;
     kmsKeyID: string;
     s3?: S3Client;
     s3Bucket: string;
     crypto?: EncryptDecrypt;
+    monitoring?: Monitoring;
   }) {
     this.kms = kms;
     this.kmsKeyID = kmsKeyID;
     this.s3 = s3;
     this.s3Bucket = s3Bucket;
     this.crypto = crypto;
+    this.logger = monitoring.logger;
   }
 
   async set(key: string, data: Buffer): Promise<void> {
@@ -121,7 +127,7 @@ export class S3SecureStore implements SecureStore {
     try {
       await this.s3.send(putObjectCommand);
     } catch (e) {
-      log.error(`Failed to write ${this.s3Bucket}/${key}`, e);
+      this.logger.error(`Failed to write ${this.s3Bucket}/${key}`, e);
 
       throw e;
     }
@@ -143,7 +149,7 @@ export class S3SecureStore implements SecureStore {
         return false;
       }
 
-      log.error(`Failed to get Head object on ${this.s3Bucket}/${key}`, e);
+      this.logger.error(`Failed to get Head object on ${this.s3Bucket}/${key}`, e);
 
       throw e;
     }
@@ -160,7 +166,7 @@ export class S3SecureStore implements SecureStore {
     } catch (e) {
       // DeleteObjectCommand will still be successful if it attempts to delete
       // a key that doesn't exist
-      log.error(`Failed to remove object on ${this.s3Bucket}/${key}`, e);
+      this.logger.error(`Failed to remove object on ${this.s3Bucket}/${key}`, e);
 
       throw e;
     }
@@ -182,7 +188,7 @@ export class S3SecureStore implements SecureStore {
         return undefined;
       }
 
-      log.error(`Failed to get object ${this.s3Bucket}/${key}`, e);
+      this.logger.error(`Failed to get object ${this.s3Bucket}/${key}`, e);
 
       throw e;
     }

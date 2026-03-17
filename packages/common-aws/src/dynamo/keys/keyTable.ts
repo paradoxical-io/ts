@@ -10,9 +10,9 @@ import {
   ScanCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import { Arrays, asBrandSafe, propertyOf, sleep } from '@paradoxical-io/common';
-import { log } from '@paradoxical-io/common-server';
 import { Brand, Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
 
+import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
 
@@ -54,14 +54,18 @@ export class KeyValueTable {
 
   private readonly tableName: string;
 
+  private readonly logger: Logger;
+
   constructor({
     namespace = 'global',
     dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('keys'),
+    monitoring = noOpMonitoring(),
   }: {
     namespace?: string;
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
+    monitoring?: Monitoring;
   } = {}) {
     assertTableNameValid(tableName);
 
@@ -70,6 +74,8 @@ export class KeyValueTable {
     this.tableName = tableName;
 
     this.dynamo = dynamo;
+
+    this.logger = monitoring.logger;
   }
 
   async get<T>(id: string): Promise<T | undefined> {
@@ -168,7 +174,7 @@ export class KeyValueTable {
         }
       }
     } catch (e) {
-      log.error(`Failed to scan ${pageItem}`, e);
+      this.logger.error(`Failed to scan ${pageItem}`, e);
 
       throw e;
     }
@@ -229,7 +235,7 @@ export class KeyValueTable {
           }
         }
       } catch (e) {
-        log.error(`Failed to get batch ${id.join(',')}`, e);
+        this.logger.error(`Failed to get batch ${id.join(',')}`, e);
 
         throw e;
       }
@@ -254,7 +260,7 @@ export class KeyValueTable {
     try {
       await this.dynamo.send(command);
     } catch (e) {
-      log.error(`Failed to set item ${data.key}`, e);
+      this.logger.error(`Failed to set item ${data.key}`, e);
 
       throw e;
     }
@@ -273,7 +279,7 @@ export class KeyValueTable {
     try {
       await this.dynamo.send(command);
     } catch (e) {
-      log.error(`Failed to delete item ${id}`, e);
+      this.logger.error(`Failed to delete item ${id}`, e);
 
       throw e;
     }

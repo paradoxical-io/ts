@@ -7,13 +7,27 @@ import {
   FilterLogEventsCommand,
   LogGroup,
 } from '@aws-sdk/client-cloudwatch-logs';
-import { log } from '@paradoxical-io/common-server';
 import { Brand, EpochMS } from '@paradoxical-io/types';
+
+import { Logger, Monitoring, noOpMonitoring } from '../monitoring';
 
 export type CloudwatchExportTaskId = Brand<'TaskId', string>;
 
 export class CloudwatchManager {
-  constructor(private cloudwatch: CloudWatchLogsClient = new CloudWatchLogsClient()) {}
+  private readonly logger: Logger;
+
+  constructor({
+    cloudwatch = new CloudWatchLogsClient(),
+    monitoring = noOpMonitoring(),
+  }: {
+    cloudwatch?: CloudWatchLogsClient;
+    monitoring?: Monitoring;
+  } = {}) {
+    this.cloudwatch = cloudwatch;
+    this.logger = monitoring.logger;
+  }
+
+  private readonly cloudwatch: CloudWatchLogsClient;
 
   /**
    * Create a new task to export a log group to an S3 bucket.
@@ -36,7 +50,7 @@ export class CloudwatchManager {
     from: EpochMS;
     to: EpochMS;
   }): Promise<CloudwatchExportTaskId | undefined> {
-    log.info(`Creating export task for ${logGroupName} from ${from} to ${to}`);
+    this.logger.info(`Creating export task for ${logGroupName} from ${from} to ${to}`);
 
     /**
      * validate that we have at least 1 log event to export within the time range.
@@ -66,7 +80,7 @@ export class CloudwatchManager {
       return taskId as CloudwatchExportTaskId;
     }
 
-    log.info(`No log events found for ${logGroupName} from ${from} to ${to}`);
+    this.logger.info(`No log events found for ${logGroupName} from ${from} to ${to}`);
 
     return undefined;
   }
