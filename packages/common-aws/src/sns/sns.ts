@@ -1,12 +1,30 @@
 import { PublishCommand, PublishCommandOutput, SNSClient } from '@aws-sdk/client-sns';
-import { log, timed } from '@paradoxical-io/common-server';
+import { timed } from '@paradoxical-io/common';
+
+import { Logger, Metrics, Monitoring, noOpMonitoring } from '../monitoring';
 
 export class SNSManager {
   static newSNSClient() {
     return new SNSClient();
   }
 
-  constructor(private sns: SNSClient = new SNSClient()) {}
+  private readonly logger: Logger;
+
+  readonly metrics: Metrics;
+
+  constructor({
+    sns = new SNSClient(),
+    monitoring = noOpMonitoring(),
+  }: {
+    sns?: SNSClient;
+    monitoring?: Monitoring;
+  } = {}) {
+    this.sns = sns;
+    this.logger = monitoring.logger;
+    this.metrics = monitoring.metrics;
+  }
+
+  private readonly sns: SNSClient;
 
   /**
    * Sends an SMS message
@@ -21,7 +39,7 @@ export class SNSManager {
     message: string,
     opts: { mode: 'Transactional' | 'Promotional' } = { mode: 'Promotional' }
   ): Promise<PublishCommandOutput> {
-    log.with({ phoneNumber }).info(`Sending SNS message to number: '${message}'`);
+    this.logger.with({ phoneNumber }).info(`Sending SNS message to number: '${message}'`);
 
     const command = new PublishCommand({
       Message: message,

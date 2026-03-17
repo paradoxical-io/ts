@@ -7,9 +7,9 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { Arrays, propertyOf } from '@paradoxical-io/common';
-import { log } from '@paradoxical-io/common-server';
 import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
 
+import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
 
@@ -81,14 +81,18 @@ export class KeyValueCounter {
 
   private readonly tableName: string;
 
+  private readonly logger: Logger;
+
   constructor({
     namespace,
     dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('keys'),
+    monitoring = noOpMonitoring(),
   }: {
     namespace: string;
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
+    monitoring?: Monitoring;
   }) {
     assertTableNameValid(tableName);
 
@@ -97,6 +101,8 @@ export class KeyValueCounter {
     this.tableName = tableName;
 
     this.dynamo = dynamo;
+
+    this.logger = monitoring.logger;
   }
 
   async get<K extends string = string>(ids: K[]): Promise<Array<KeyCount<K>>> {
@@ -217,7 +223,7 @@ export class KeyValueCounter {
 
       return Number(result.Attributes![propertyOf<KeyValueCountTableDao>('count')]!.N);
     } catch (e) {
-      log.error(`Failed to increment ${data.key}`, e);
+      this.logger.error(`Failed to increment ${data.key}`, e);
 
       throw e;
     }
@@ -236,7 +242,7 @@ export class KeyValueCounter {
     try {
       await this.dynamo.send(command);
     } catch (e) {
-      log.error(`Failed to delete ${id}`, e);
+      this.logger.error(`Failed to delete ${id}`, e);
 
       throw e;
     }

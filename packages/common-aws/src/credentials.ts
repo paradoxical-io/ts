@@ -1,6 +1,8 @@
-import { gitRootSync, log } from '@paradoxical-io/common-server';
+import { gitRootSync } from '@paradoxical-io/common-server';
 import { Env } from '@paradoxical-io/types';
 import * as path from 'path';
+
+import { Logger, noOpMonitoring } from './monitoring';
 
 export interface Profile {
   profile: string;
@@ -9,11 +11,12 @@ export interface Profile {
 /**
  * Sets the current environment to use the AWS credentials from the shared credentials file
  * @param requestedEnv
+ * @param logger
  */
-export function useAWS(requestedEnv: Env | Profile): void {
+export function useAWS(requestedEnv: Env | Profile, logger: Logger = noOpMonitoring().logger): void {
   let env = requestedEnv;
   if (env === 'local') {
-    log.debug("Running 'local' environment. Using dev env for all aws resources");
+    logger.debug("Running 'local' environment. Using dev env for all aws resources");
     env = 'dev';
   }
 
@@ -24,7 +27,7 @@ export function useAWS(requestedEnv: Env | Profile): void {
   process.env.AWS_CONFIG_FILE = configPath;
   process.env.AWS_SDK_LOAD_CONFIG = 'true';
 
-  log.debug(`Configured AWS to use profile ${profile}`);
+  logger.debug(`Configured AWS to use profile ${profile}`);
 }
 
 function resolveConfig(env: Env | Profile) {

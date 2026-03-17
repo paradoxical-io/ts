@@ -9,11 +9,12 @@ import {
   QueryCommand,
   ResourceNotFoundException,
 } from '@aws-sdk/client-dynamodb';
-import { Arrays, isEqual, jitter, propertyOf, sleep } from '@paradoxical-io/common';
-import { consistentMd5, log, timed } from '@paradoxical-io/common-server';
+import { Arrays, isEqual, jitter, propertyOf, sleep, timed } from '@paradoxical-io/common';
+import { consistentMd5 } from '@paradoxical-io/common-server';
 import { CompoundKey, Milliseconds, notNullOrUndefined, nullOrUndefined, SortKey } from '@paradoxical-io/types';
 import _ from 'lodash';
 
+import { Logger, Metrics, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
 import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
 import { DynamoKey } from './keyTable';
@@ -52,18 +53,28 @@ export class PartitionedKeyValueTable {
 
   readonly tableName: string;
 
+  private readonly logger: Logger;
+
+  readonly metrics: Metrics;
+
   constructor({
     dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('partitioned_keys'),
+    monitoring = noOpMonitoring(),
   }: {
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
+    monitoring?: Monitoring;
   } = {}) {
     assertTableNameValid(tableName);
 
     this.tableName = tableName;
 
     this.dynamo = dynamo;
+
+    this.logger = monitoring.logger;
+
+    this.metrics = monitoring.metrics;
   }
 
   /**
@@ -93,7 +104,7 @@ export class PartitionedKeyValueTable {
     const next = [...(previous?.data ?? []), ...normalized.filter(i => !itemExists(i))];
 
     if (!(await this.setIfMd5Matches(key, next, previous?.md5))) {
-      log.info(`Unable to add key ${JSON.stringify(key)} to set because md5 does not match. Trying again`);
+      this.logger.info(`Unable to add key ${JSON.stringify(key)} to set because md5 does not match. Trying again`);
 
       await sleep((250 + jitter(100 as Milliseconds)) as Milliseconds);
 
@@ -212,7 +223,7 @@ export class PartitionedKeyValueTable {
         return [];
       }
 
-      log.error(`Failed to list all from partition: ${partition}`, e);
+      this.logger.error(`Failed to list all from partition: ${partition}`, e);
 
       throw e;
     }
@@ -306,7 +317,7 @@ export class PartitionedKeyValueTable {
         return false;
       }
 
-      log.error(`Failed to set Partition: ${key.partition}, Sort: ${this.sortKey(key)}`, e);
+      this.logger.error(`Failed to set Partition: ${key.partition}, Sort: ${this.sortKey(key)}`, e);
 
       throw e;
     }
@@ -407,7 +418,7 @@ export class PartitionedKeyValueTable {
         return undefined;
       }
 
-      log.error(`Unable to get Partition: ${key.partition}, Sort: ${sortKey}`, e);
+      this.logger.error(`Unable to get Partition: ${key.partition}, Sort: ${sortKey}`, e);
 
       throw e;
     }
@@ -461,7 +472,7 @@ export class PartitionedKeyValueTable {
         return false;
       }
 
-      log.error(`Failed to set Partition: ${key.partition}, Sort: ${sortKey}, Previous MD5: ${previousMd5}`, e);
+      this.logger.error(`Failed to set Partition: ${key.partition}, Sort: ${sortKey}, Previous MD5: ${previousMd5}`, e);
 
       throw e;
     }
@@ -500,7 +511,7 @@ export class PartitionedKeyValueTable {
         return false;
       }
 
-      log.error(`Failed to get Partition: ${key.partition}, Sort: ${sortKey}`, e);
+      this.logger.error(`Failed to get Partition: ${key.partition}, Sort: ${sortKey}`, e);
 
       throw e;
     }
@@ -610,7 +621,7 @@ export class PartitionedKeyValueTable {
     try {
       await this.dynamo.send(command);
     } catch (e) {
-      log.error(`Failed to delete item Partition: ${key.partition}, Sort: ${sortKey}`, e);
+      this.logger.error(`Failed to delete item Partition: ${key.partition}, Sort: ${sortKey}`, e);
 
       throw e;
     }

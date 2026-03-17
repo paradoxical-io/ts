@@ -3,17 +3,31 @@ import {
   GoneException,
   PostToConnectionCommand,
 } from '@aws-sdk/client-apigatewaymanagementapi';
-import { log } from '@paradoxical-io/common-server';
+
+import { Logger, Monitoring, noOpMonitoring } from '../monitoring';
 
 export class ApiGatewayWebsocket {
-  constructor(private api: ApiGatewayManagementApiClient = new ApiGatewayManagementApiClient()) {}
+  private readonly api: ApiGatewayManagementApiClient;
+
+  private readonly logger: Logger;
+
+  constructor({
+    api = new ApiGatewayManagementApiClient(),
+    monitoring = noOpMonitoring(),
+  }: {
+    api?: ApiGatewayManagementApiClient;
+    monitoring?: Monitoring;
+  } = {}) {
+    this.api = api;
+    this.logger = monitoring.logger;
+  }
 
   static createEndpoint(endpoint: string): ApiGatewayWebsocket {
-    return new ApiGatewayWebsocket(
-      new ApiGatewayManagementApiClient({
+    return new ApiGatewayWebsocket({
+      api: new ApiGatewayManagementApiClient({
         endpoint: endpoint.replace('wss', 'https'),
-      })
-    );
+      }),
+    });
   }
 
   /**
@@ -36,7 +50,7 @@ export class ApiGatewayWebsocket {
         return false;
       }
 
-      log.error(`Error publishing to connection id: ${connectionId}`, e);
+      this.logger.error(`Error publishing to connection id: ${connectionId}`, e);
 
       return false;
     }

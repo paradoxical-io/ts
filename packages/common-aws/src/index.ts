@@ -3,6 +3,7 @@ export * from './cloudwatch';
 export * from './dynamo';
 export * from './gateway/apiGatewayWebsocket';
 export * from './lambda/metrics';
+export * from './monitoring';
 export * from './parameter-store';
 export * from './s3';
 export * from './sns/sns';

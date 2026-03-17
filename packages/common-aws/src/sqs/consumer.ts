@@ -8,10 +8,11 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { defaultTimeProvider, sleep, TimeProvider } from '@paradoxical-io/common';
-import { currentEnvironment, isLocal, log, Metrics, signals, withNewTrace } from '@paradoxical-io/common-server';
+import { currentEnvironment, isLocal, signals, withNewTrace } from '@paradoxical-io/common-server';
 import { bottom, Brand, EpochMS, Milliseconds, notNullOrUndefined, Seconds } from '@paradoxical-io/types';
 
 import { PartitionedKeyValueTable } from '../dynamo';
+import { Logger, Metrics, Monitoring, noOpMonitoring } from '../monitoring';
 import { SQSConfig } from './config';
 import { DevProxyProvider, ProxyQueueProvider } from './proxy/proxyProvider';
 import { getInvisibilityDelay, SQSEvent } from './publisher';
@@ -52,6 +53,8 @@ export interface Options {
   maxVisibilityTimeoutSeconds?: Seconds;
 
   proxyProvider?: ProxyQueueProvider;
+
+  monitoring?: Monitoring;
 }
 
 interface StopParams {
@@ -102,13 +105,18 @@ export interface RepublishMessage {
  *
  * The returning promise will not resolve until the consumers are all gracefully stopped
  * @param consumers
+ * @param options
  */
-export async function runSQS(consumers: Array<SQSConsumer<unknown>>): Promise<void> {
+export async function runSQS(
+  consumers: Array<SQSConsumer<unknown>>,
+  options?: { monitoring?: Monitoring }
+): Promise<void> {
+  const logger = options?.monitoring?.logger ?? noOpMonitoring().logger;
   const consumerPromises = consumers.map(c => c.start());
 
   // tell the consumer to stop on shutdown
   signals.onShutdown(async () => {
-    log.info('Stopping consumers');
+    logger.info('Stopping consumers');
 
     consumers.forEach(consumer => consumer.stop());
 
@@ -116,12 +124,12 @@ export async function runSQS(consumers: Array<SQSConsumer<unknown>>): Promise<vo
     await Promise.all(consumerPromises);
   });
 
-  log.info('Consumers are starting');
+  logger.info('Consumers are starting');
 
   // start consumer until shutdown requested
   await Promise.all(consumerPromises);
 
-  log.info('Consumers are finished');
+  logger.info('Consumers are finished');
 }
 
 export type MessageProcessorResult = void | RetryMessageLater | RepublishMessage;
@@ -135,7 +143,7 @@ export interface MessageProcessorRaw<T> {
 }
 
 export abstract class SQSConsumer<T> implements MessageProcessor<T> {
-  static defaultOptions: Options = {
+  static defaultOptions: Omit<Options, 'monitoring'> = {
     longPollWaitTimeSeconds: 20 as Seconds,
     maxNumberOfMessages: 10,
     sqs: new SQSClient(),
@@ -153,11 +161,19 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
   private readonly timeProvider: TimeProvider;
 
+  private readonly logger: Logger;
+
+  private readonly metrics: Metrics;
+
   constructor(private queueUrl: QueueUrl, opts?: Partial<Options>) {
     this.opts = { ...SQSConsumer.defaultOptions, ...opts };
     this.sqs = this.opts.sqs;
     this.queueName = queueUrl.split('/').reverse()[0] as QueueName;
     this.timeProvider = this.opts.timeProvider;
+
+    const monitoring = this.opts.monitoring ?? noOpMonitoring();
+    this.logger = monitoring.logger;
+    this.metrics = monitoring.metrics;
   }
 
   /**
@@ -185,7 +201,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
    * Tells the consumer to stop processing. Will first finish processing
    */
   stop({ timeoutMilli, flush }: { timeoutMilli?: number; flush?: boolean } = {}): void {
-    log.info(`Stopping consumer on queue ${this.queueUrl}`);
+    this.logger.info(`Stopping consumer on queue ${this.queueUrl}`);
 
     this.stopped = {
       flush,
@@ -218,15 +234,15 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
       traceId = event.trace;
 
       if (!(event && event.data && event.timestamp)) {
-        log.error(
+        this.logger.error(
           `Received invalid event payload. Missing required SQSEvent<T> fields. Dumping message: ${message.Body.toString()}`
         );
-        Metrics.instance.increment('sqs.invalid_payload', tags);
+        this.metrics.increment('sqs.invalid_payload', tags);
         return;
       }
 
       // log how long the message was in the queue
-      Metrics.instance.timing('sqs.time_in_queue_ms', this.opts.timeProvider.epochMS() - event.timestamp, tags);
+      this.metrics.timing('sqs.time_in_queue_ms', this.opts.timeProvider.epochMS() - event.timestamp, tags);
 
       const processingStart = new Date();
 
@@ -240,11 +256,11 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
             shouldAck = await this.handMessageToConsumer(event, message);
           } catch (e) {
             // log the error to get access to the trace, but re-throw
-            log.error('Error processing message in consumer', e);
+            this.logger.error('Error processing message in consumer', e);
 
             throw e;
           } finally {
-            log.info('Done processing sqs message');
+            this.logger.info('Done processing sqs message');
           }
         },
         traceId,
@@ -252,11 +268,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
       );
 
       // mark how long it took to process a message
-      Metrics.instance.timing(
-        'sqs.processing_time_ms',
-        this.opts.timeProvider.epochMS() - processingStart.getTime(),
-        tags
-      );
+      this.metrics.timing('sqs.processing_time_ms', this.opts.timeProvider.epochMS() - processingStart.getTime(), tags);
 
       if (shouldAck) {
         // ack the message from sqs
@@ -265,12 +277,12 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
     } catch (err) {
       // resume logging with a trace if we have one, otherwise generate a new one so these log message are all paired together
       await withNewTrace(async () => {
-        log.error('Unhandled error processing message', err);
+        this.logger.error('Unhandled error processing message', err);
 
-        Metrics.instance.increment('sqs.processing_error');
+        this.metrics.increment('sqs.processing_error');
 
         if (this.opts.makeAvailableOnError && message.ReceiptHandle) {
-          log.debug('Making message immediately available');
+          this.logger.debug('Making message immediately available');
 
           const command = new ChangeMessageVisibilityCommand({
             ReceiptHandle: message.ReceiptHandle,
@@ -289,19 +301,19 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
   }
 
   private async receive(): Promise<void> {
-    log.info(`Starting to receive messages on ${this.queueUrl}`);
+    this.logger.info(`Starting to receive messages on ${this.queueUrl}`);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       if (this.stopped) {
         // hard stop
         if (!this.stopped.flush) {
-          log.info(`Hard stop consumer on queue ${this.queueUrl}`);
+          this.logger.info(`Hard stop consumer on queue ${this.queueUrl}`);
           return;
         }
         // timed out
         if (this.stopped.timeout && this.stopped.timeout.endTime >= new Date().getTime()) {
-          log.info(`Stop timeout of consumer on queue ${this.queueUrl}`);
+          this.logger.info(`Stop timeout of consumer on queue ${this.queueUrl}`);
 
           return;
         }
@@ -332,12 +344,12 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
         // process all messages
         await Promise.all(result.Messages.map(x => this.handleMessage(x)));
       } catch (e) {
-        log.error(
+        this.logger.error(
           'Error processing batch of messages.  Should not happen since message handling should fail but just not ack!',
           e
         );
 
-        Metrics.instance.increment('sqs.batch_failure', { queue: this.queueUrl });
+        this.metrics.increment('sqs.batch_failure', { queue: this.queueUrl });
 
         // retry in 1 second to prevent spamming on unknown failures
         await sleep(1000 as Milliseconds);
@@ -362,7 +374,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
       // now is past the expiration
       event.republishContext?.maxPublishExpiration <= now
     ) {
-      log.error(
+      this.logger.error(
         `Republished message reached expiration, not acking anymore. Expiration ${event.republishContext?.maxPublishExpiration}`
       );
       return false;
@@ -379,7 +391,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
       if (notNullOrUndefined(result.expireFromFirstPublishMS)) {
         nextEvent.republishContext.maxPublishExpiration = (result.expireFromFirstPublishMS + now) as EpochMS;
 
-        log.info(
+        this.logger.info(
           `Republishing message and setting expiration to time out at ${nextEvent.republishContext.maxPublishExpiration}`
         );
       }
@@ -389,7 +401,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
     const messageBody = JSON.stringify(nextEvent);
 
-    log.info(
+    this.logger.info(
       `Requested to retry event later via republish. Making message visible in ~${JSON.stringify(
         result.retryInSeconds
       )} seconds. Reason: ${result.reason}`
@@ -415,7 +427,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
    */
   private async handMessageToConsumer(event: SQSEvent<T>, message: Message): Promise<boolean> {
     if (event.republishContext?.processAfter && this.timeProvider.epochMS() < event.republishContext.processAfter) {
-      log.info(`Message should be processed after ${event.republishContext?.processAfter}, not handling yet`);
+      this.logger.info(`Message should be processed after ${event.republishContext?.processAfter}, not handling yet`);
 
       return this.republishLater(event, {
         type: 'republish-later',
@@ -437,14 +449,14 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
       ? `Current re-publish count: ${event.republishContext?.publishCount}`
       : '';
 
-    log.info(`Starting processing sqs message. ${republishCountLog}`);
+    this.logger.info(`Starting processing sqs message. ${republishCountLog}`);
 
     const result = await this.processRaw(event);
 
     if (result && message.ReceiptHandle) {
       switch (result.type) {
         case 'retry-later': {
-          log.info(
+          this.logger.info(
             `Requested to retry event later. Making message visible in ${result.retryInSeconds} seconds. Reason: ${result.reason}`
           );
 
@@ -462,7 +474,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
           return this.republishLater(event, result);
         default:
           return bottom(result, never => {
-            log.warn(never);
+            this.logger.warn(never);
 
             // we don't know the type of the result, so give it to the consumer to handle
             return true;
@@ -497,7 +509,7 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
 
         await this.sqs.send(command);
 
-        log.info(`Proxied ${messages.length} messages to ${queue}`);
+        this.logger.info(`Proxied ${messages.length} messages to ${queue}`);
       })
     );
   }
@@ -552,16 +564,26 @@ export class FunctionalConsumerRaw<T> extends SQSConsumer<T> {
   }
 }
 
-export function newConsumer<T>(method: (event: T) => Promise<MessageProcessorResult>, config: SQSConfig) {
+export function newConsumer<T>(
+  method: (event: T) => Promise<MessageProcessorResult>,
+  config: SQSConfig,
+  monitoring?: Monitoring
+) {
   return new FunctionalConsumer<T>(method, config.queueUrl, {
     maxNumberOfMessages: config.maxNumberOfMessages,
     proxyProvider: currentEnvironment() === 'prod' ? undefined : new DevProxyProvider(new PartitionedKeyValueTable()),
+    monitoring,
   });
 }
 
-export function newRawConsumer<T>(method: (event: SQSEvent<T>) => Promise<MessageProcessorResult>, config: SQSConfig) {
+export function newRawConsumer<T>(
+  method: (event: SQSEvent<T>) => Promise<MessageProcessorResult>,
+  config: SQSConfig,
+  monitoring?: Monitoring
+) {
   return new FunctionalConsumerRaw<T>(method, config.queueUrl, {
     maxNumberOfMessages: config.maxNumberOfMessages,
     proxyProvider: currentEnvironment() === 'prod' ? undefined : new DevProxyProvider(new PartitionedKeyValueTable()),
+    monitoring,
   });
 }

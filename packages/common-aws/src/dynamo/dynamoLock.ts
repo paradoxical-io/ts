@@ -6,9 +6,10 @@ import {
   UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { defaultTimeProvider, propertiesOf, TimeProvider, toEpochSeconds } from '@paradoxical-io/common';
-import { Lock, LockApi, log } from '@paradoxical-io/common-server';
+import { Lock, LockApi } from '@paradoxical-io/common-server';
 import { EpochSeconds } from '@paradoxical-io/types';
 
+import { Logger, Monitoring, noOpMonitoring } from '../monitoring';
 import { DynamoDao } from './mapper';
 import { DynamoTableName, dynamoTableName } from './util';
 
@@ -19,20 +20,26 @@ export class DynamoLock implements LockApi {
 
   private readonly timeProvider: TimeProvider;
 
+  private readonly logger: Logger;
+
   constructor({
     dynamo = new DynamoDBClient(),
     tableName = dynamoTableName('locks'),
     timeProvider = defaultTimeProvider(),
+    monitoring = noOpMonitoring(),
   }: {
     dynamo?: DynamoDBClient;
     tableName?: DynamoTableName;
     timeProvider?: TimeProvider;
+    monitoring?: Monitoring;
   } = {}) {
     this.dynamo = dynamo;
 
     this.tableName = tableName;
 
     this.timeProvider = timeProvider;
+
+    this.logger = monitoring.logger;
   }
 
   async tryAcquire(key: string, timeoutSeconds: number): Promise<Lock | undefined> {
@@ -79,7 +86,7 @@ export class DynamoLock implements LockApi {
         expired = `because previous lock expired at ${old.Attributes['expiresAt']!.N}`;
       }
 
-      log.info(
+      this.logger.info(
         `Acquired lock id: ${key}, expires at ${payload.expiresAt}, evaluated with now as ${now.toString()} ${expired}`
       );
 
@@ -97,12 +104,12 @@ export class DynamoLock implements LockApi {
 
           await this.dynamo.send(deleteItemCommand);
 
-          log.info(`Released lock id: ${key}`);
+          this.logger.info(`Released lock id: ${key}`);
         },
       };
     } catch (e) {
       if (e instanceof ConditionalCheckFailedException) {
-        log.info(`Cannot acquire lock id: ${key}, it is still held`);
+        this.logger.info(`Cannot acquire lock id: ${key}, it is still held`);
 
         return undefined;
       }

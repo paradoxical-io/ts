@@ -1,11 +1,20 @@
-import { defaultTimeProvider } from '@paradoxical-io/common';
-import { logMethod } from '@paradoxical-io/common-server';
+import { defaultTimeProvider, logMethod } from '@paradoxical-io/common';
 import { CompoundKey, DoOnceActionKey, DoOnceResponse, EpochMS, SortKey } from '@paradoxical-io/types';
 
+import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
 import { PartitionedKeyValueTable } from '../keys';
 
 export class DoOnceManager<Key extends string = string> {
-  constructor(private readonly kv: PartitionedKeyValueTable, private readonly time = defaultTimeProvider()) {}
+  // Accessed by @logMethod() decorator via reflection
+  readonly logger: Logger;
+
+  constructor(
+    private readonly kv: PartitionedKeyValueTable,
+    private readonly time = defaultTimeProvider(),
+    monitoring: Monitoring = noOpMonitoring()
+  ) {
+    this.logger = monitoring.logger;
+  }
 
   /**
    * The key format where each action is stored separately in the KV.
