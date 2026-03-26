@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { asMilli, PathRedaction, pruneUndefined, redact, redactKey, SafeJson } from '@paradoxical-io/common';
+import { asMilli, md5, PathRedaction, pruneUndefined, redact, redactKey, SafeJson } from '@paradoxical-io/common';
 import { Brand, notNullOrUndefined } from '@paradoxical-io/types';
 import { LRUCache } from 'lru-cache';
 import { serializeError } from 'serialize-error';
@@ -7,7 +7,6 @@ import * as winston from 'winston';
 import { LoggerOptions } from 'winston';
 
 import { isLocal } from '../env';
-import { md5 } from '../hash';
 import { isAxiosError } from '../http';
 import { Metrics } from '../metrics';
 import { getCurrentUserId, getOptionalContext, Trace, traceID } from '../trace';

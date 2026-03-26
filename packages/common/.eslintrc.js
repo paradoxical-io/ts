@@ -23,7 +23,6 @@ module.exports = {
           'buffer',
           'child_process',
           'cluster',
-          'crypto',
           'dgram',
           'dns',
           'domain',
