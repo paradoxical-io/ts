@@ -11,7 +11,7 @@ import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
-import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
+import { DynamoTableName } from '../util';
 
 export class PartitionedKeyCounterTableDao<T extends string = string> implements DynamoDao {
   @hashKey()
@@ -42,15 +42,13 @@ export class PartitionedKeyValueCounter {
 
   constructor({
     dynamo = new DynamoDBClient(),
-    tableName = dynamoTableName('partitioned_keys'),
+    tableName,
     monitoring = noOpMonitoring(),
   }: {
     dynamo?: DynamoDBClient;
-    tableName?: DynamoTableName;
+    tableName: DynamoTableName;
     monitoring?: Monitoring;
   }) {
-    assertTableNameValid(tableName);
-
     this.tableName = tableName;
 
     this.dynamo = dynamo;

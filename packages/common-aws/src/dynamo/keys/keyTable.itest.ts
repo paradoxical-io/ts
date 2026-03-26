@@ -2,13 +2,15 @@ import { safeExpect } from '@paradoxical-io/common-test';
 import { CompoundKey, SortKey } from '@paradoxical-io/types';
 
 import { newDynamoDocker } from '../docker';
-import { dynamoTableName, KeyValueCounter, KeyValueCountTableDao } from '../index';
+import { DynamoTableName, KeyValueCounter, KeyValueCountTableDao } from '../index';
 import { KeyValueTable, KeyValueTableDao } from './keyTable';
 import { PartitionedKeyValueTable, PartitionedKeyValueTableDao } from './partitionedKeyTable';
 import { PartitionedKeyCounterTableDao, PartitionedKeyValueCounter } from './partitionedKeyValueCounter';
 
+const testTable = 'test.keys' as DynamoTableName;
+
 test('creates and manages keys', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(KeyValueTableDao, table);
@@ -35,7 +37,7 @@ test('creates and manages keys', async () => {
 });
 
 test('creates and manages key counters', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(KeyValueCountTableDao, table);
@@ -68,7 +70,7 @@ test('creates and manages key counters', async () => {
 });
 
 test('creates and manages partitioned key counters', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(PartitionedKeyCounterTableDao, table);
@@ -102,7 +104,7 @@ test('creates and manages partitioned key counters', async () => {
 });
 
 test('creates and manages partitioned key values', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(PartitionedKeyValueTableDao, table);
@@ -138,7 +140,7 @@ test('creates and manages partitioned key values', async () => {
 });
 
 test('creates and manages partitioned key sets', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(PartitionedKeyValueTableDao, table);
@@ -167,7 +169,7 @@ test('creates and manages partitioned key sets', async () => {
 });
 
 test('is parallel safe when for partitioned key sets', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(PartitionedKeyValueTableDao, table);
@@ -193,7 +195,7 @@ test('is parallel safe when for partitioned key sets', async () => {
 });
 
 test('skips existing data if it exists', async () => {
-  const table = dynamoTableName('test.keys');
+  const table = testTable;
   const docker = await newDynamoDocker();
   try {
     await docker.createTable(PartitionedKeyValueTableDao, table);

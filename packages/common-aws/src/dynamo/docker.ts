@@ -1,43 +1,23 @@
-import { getSchema } from '@aws/dynamodb-data-mapper';
-import { keysFromSchema } from '@aws/dynamodb-data-marshaller';
-import { CreateTableCommand, DynamoDBClient, waitUntilTableExists } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { ConfiguredRetryStrategy } from '@aws-sdk/util-retry';
 import { Docker, newDocker } from '@paradoxical-io/common-server/dist/test/docker';
 
 import { DynamoDao } from './mapper';
+import { DynamoUtil } from './util';
 
 export class DynamoDocker {
-  constructor(public container: Docker, public dynamo: DynamoDBClient) {}
+  readonly util: DynamoUtil;
+
+  constructor(public container: Docker, public dynamo: DynamoDBClient) {
+    this.util = new DynamoUtil(dynamo);
+  }
 
   async createTable<T extends DynamoDao>(descriptor: new () => T, tableName?: string): Promise<void> {
-    const schema = getSchema(descriptor.prototype);
-    const { attributes, tableKeys } = keysFromSchema(schema);
+    return this.util.createTable(descriptor, tableName);
+  }
 
-    const attributeDefs = Object.keys(attributes).map(name => ({
-      AttributeName: name,
-      AttributeType: attributes[name],
-    }));
-
-    const keySchema = Object.keys(tableKeys).map(name => ({
-      AttributeName: name,
-      KeyType: tableKeys[name],
-    }));
-
-    const command = new CreateTableCommand({
-      TableName: tableName,
-      AttributeDefinitions: attributeDefs,
-      KeySchema: keySchema,
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 1,
-        WriteCapacityUnits: 1,
-      },
-    });
-
-    const result = await this.dynamo.send(command);
-
-    if (result.TableDescription?.TableStatus !== 'ACTIVE') {
-      await waitUntilTableExists({ client: this.dynamo, maxWaitTime: 30 }, { TableName: tableName });
-    }
+  async removeTable(tableName: string): Promise<void> {
+    return this.util.removeTable(tableName);
   }
 }
 
@@ -54,6 +34,7 @@ export async function newDynamoDocker(): Promise<DynamoDocker> {
   const dynamo = new DynamoDBClient({
     endpoint: base,
     region: 'us-west-2',
+    credentials: { accessKeyId: 'local', secretAccessKey: 'local' },
     // added retry logic as there appears to be intermittent timeout errors with dynamodb-local
     retryStrategy: new ConfiguredRetryStrategy(4, (attempt: number) => 100 + attempt * 1000),
   });

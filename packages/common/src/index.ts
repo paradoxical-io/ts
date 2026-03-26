@@ -4,6 +4,7 @@ export * from './decorators';
 export * from './di';
 export * from './errors';
 export * from './extensions';
+export * from './hash';
 export * from './metrics';
 export * from './name';
 export * from './probability';

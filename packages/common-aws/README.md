@@ -61,7 +61,7 @@ import { S3SecureStore, downloadObject } from '@paradoxical-io/common-aws';
 
 const secureStore = new S3SecureStore({
   s3Bucket: 'my-bucket',
-  kmsKeyID: 'arn:aws:kms:...'
+  kmsKeyID: 'arn:aws:kms:...',
 });
 
 await secureStore.set('sensitive-data', Buffer.from('secret'));
@@ -128,7 +128,7 @@ import { CloudfrontPrivateAccess } from '@paradoxical-io/common-aws';
 const cloudfront = new CloudfrontPrivateAccess({
   distributionUrl: 'https://d123.cloudfront.net',
   privateKey: '...',
-  publicKeyId: 'KEY123'
+  publicKeyId: 'KEY123',
 });
 
 const cookies = await cloudfront.generateCookies(expiresAt);
@@ -150,7 +150,7 @@ const taskId = await cwManager.createExportTask({
   s3Bucket: 'logs-bucket',
   logGroupName: '/aws/lambda/my-function',
   from: startTime,
-  to: endTime
+  to: endTime,
 });
 ```
 
@@ -165,9 +165,7 @@ WebSocket connection management for API Gateway:
 ```typescript
 import { ApiGatewayWebsocket } from '@paradoxical-io/common-aws';
 
-const websocket = ApiGatewayWebsocket.createEndpoint(
-  'wss://abc123.execute-api.us-east-1.amazonaws.com/prod'
-);
+const websocket = ApiGatewayWebsocket.createEndpoint('wss://abc123.execute-api.us-east-1.amazonaws.com/prod');
 
 await websocket.publish(connectionId, { message: 'Hello!' });
 ```
@@ -186,7 +184,7 @@ import { defaultValueProvider } from '@paradoxical-io/common-aws';
 const valueProvider = await defaultValueProvider();
 const dbPassword = await valueProvider.get({
   type: 'ssm',
-  key: '/prod/database/password'
+  key: '/prod/database/password',
 });
 ```
 
@@ -243,8 +241,8 @@ const s3 = new S3Client({
   region: 'us-east-1',
   credentials: {
     accessKeyId: '...',
-    secretAccessKey: '...'
-  }
+    secretAccessKey: '...',
+  },
 });
 ```
 
@@ -276,15 +274,39 @@ Metrics integrate with Datadog by default but can be customized.
 
 ## Dependencies
 
-This package uses AWS SDK v3 and requires the following peer dependencies:
+All AWS SDK clients, `@paradoxical-io/common-server`, `aws-lambda`, and `datadog-lambda-js` are **peer dependencies**. You must install only the packages required by the subpath you import. This avoids pulling in the entire AWS SDK or heavy dependencies when you only need a single module.
 
-- Node.js 14 or higher
-- TypeScript 4.5 or higher (for development)
+For example, if you only use `@paradoxical-io/common-aws/dynamo/keys`:
 
-Core dependencies include:
-- `@aws-sdk/client-*` - AWS SDK v3 clients
-- `@paradoxical-io/types` - Shared type definitions
-- `@paradoxical-io/common-server` - Server utilities
+```bash
+yarn add @paradoxical-io/common-aws @aws-sdk/client-dynamodb @aws/dynamodb-data-mapper-annotations
+```
+
+If you use `@paradoxical-io/common-aws/sqs`, you also need `@paradoxical-io/common-server`:
+
+```bash
+yarn add @paradoxical-io/common-aws @aws-sdk/client-sqs @paradoxical-io/common-server
+```
+
+### Subpath Exports
+
+Import only the module you need to keep your dependency footprint minimal:
+
+| Subpath                                      | Required Peer Dependencies                                                   |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `@paradoxical-io/common-aws/dynamo/keys`     | `@aws-sdk/client-dynamodb`, `@aws/dynamodb-data-mapper-annotations`          |
+| `@paradoxical-io/common-aws/dynamo`          | Above + `@paradoxical-io/common-server`                                      |
+| `@paradoxical-io/common-aws/monitoring`      | (none beyond core)                                                           |
+| `@paradoxical-io/common-aws/cloudfront`      | `@aws-sdk/cloudfront-signer`                                                 |
+| `@paradoxical-io/common-aws/cloudwatch`      | `@aws-sdk/client-cloudwatch-logs`                                            |
+| `@paradoxical-io/common-aws/sns`             | `@aws-sdk/client-sns`                                                        |
+| `@paradoxical-io/common-aws/sqs`             | `@aws-sdk/client-sqs`, `@paradoxical-io/common-server`                       |
+| `@paradoxical-io/common-aws/s3`              | `@aws-sdk/client-s3`, `@aws-sdk/client-kms`, `@paradoxical-io/common-server` |
+| `@paradoxical-io/common-aws/parameter-store` | `@aws-sdk/client-ssm`, `@paradoxical-io/common-server`                       |
+| `@paradoxical-io/common-aws/lambda`          | `aws-lambda`, `datadog-lambda-js`                                            |
+| `@paradoxical-io/common-aws/gateway`         | `@aws-sdk/client-apigatewaymanagementapi`                                    |
+
+The root import (`@paradoxical-io/common-aws`) re-exports everything and requires all peer dependencies.
 
 ## Configuration
 

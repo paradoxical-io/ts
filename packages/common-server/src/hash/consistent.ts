@@ -1,5 +1,8 @@
-import { chance, deepSort, SafeJson } from '@paradoxical-io/common';
+import { chance } from '@paradoxical-io/common';
 import { createHash } from 'crypto';
+
+// Re-export from common for backwards compatibility
+export { consistentMd5, md5 } from '@paradoxical-io/common';
 
 /**
  * Hashes the value consistently to a space between 0 and 1. Can be used for determining if certain
@@ -33,20 +36,6 @@ export function consistentHashExperimentKey(value: string, key: string): number 
   const hashNum = buffer.readUInt32BE(0);
 
   return consistentHash(value, hashNum);
-}
-
-export function md5(value: string): string {
-  return createHash('md5').update(value).digest().toString('hex');
-}
-
-/**
- * Creates an md5 hash of a deep sorted value, which  means it will be consistent
- * across even when the json fields are arbitrary order.  This is a matter of logical
- * data md5 and not physical json blob md5
- * @param value
- */
-export function consistentMd5(value: unknown): string {
-  return md5(SafeJson.stringify(deepSort(value)));
 }
 
 /**

@@ -1,11 +1,14 @@
 import { Streams } from '@paradoxical-io/common';
 import { CompoundKey, notNullOrUndefined } from '@paradoxical-io/types';
 
+import { DynamoTableName } from '../../util';
 import { KeyValueList, KeyValueTable } from '../keyTable';
 import { KeyCount, KeyValueCounter } from '../keyValueCounter';
 import { PartitionedKeys } from '../partitionedKeys';
 import { PartitionedKeyValueTable } from '../partitionedKeyTable';
 import { PartitionedKeyValueCounter } from '../partitionedKeyValueCounter';
+
+const inMemoryTableName = 'in-memory' as DynamoTableName;
 
 /**
  * An in memory kv table that uses a map. Used for testing and stubbing
@@ -15,7 +18,7 @@ export class InMemoryKvTable extends KeyValueTable {
   private readonly store = new Map<string, string>();
 
   constructor() {
-    super({ namespace: '' });
+    super({ namespace: '', tableName: inMemoryTableName });
   }
 
   async delete(id: string): Promise<void> {
@@ -51,7 +54,7 @@ export class InMemoryPartitionedKvTable extends PartitionedKeyValueTable {
   private kvTable: InMemoryKvTable;
 
   constructor() {
-    super({});
+    super({ tableName: inMemoryTableName });
     this.kvTable = new InMemoryKvTable();
   }
 
@@ -121,7 +124,7 @@ export class InMemoryPartitionedKeyCountTable extends PartitionedKeyValueCounter
   private readonly store = new InMemoryPartitionedKvTable();
 
   constructor() {
-    super({});
+    super({ tableName: inMemoryTableName });
   }
 
   async delete<P extends string = string>(id: CompoundKey<P, number>): Promise<void> {
@@ -152,7 +155,7 @@ export class InMemoryKeyCountTable extends KeyValueCounter {
   private readonly store = new Map<string, number>();
 
   constructor() {
-    super({ namespace: '' });
+    super({ namespace: '', tableName: inMemoryTableName });
   }
 
   async delete<K extends string = string>(id: K): Promise<void> {

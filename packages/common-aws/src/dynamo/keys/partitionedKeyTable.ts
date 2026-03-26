@@ -9,14 +9,13 @@ import {
   QueryCommand,
   ResourceNotFoundException,
 } from '@aws-sdk/client-dynamodb';
-import { Arrays, isEqual, jitter, propertyOf, sleep, timed } from '@paradoxical-io/common';
-import { consistentMd5 } from '@paradoxical-io/common-server';
+import { Arrays, consistentMd5, isEqual, jitter, propertyOf, sleep, timed } from '@paradoxical-io/common';
 import { CompoundKey, Milliseconds, notNullOrUndefined, nullOrUndefined, SortKey } from '@paradoxical-io/types';
 import _ from 'lodash';
 
 import { Logger, Metrics, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
-import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
+import { DynamoTableName } from '../util';
 import { DynamoKey } from './keyTable';
 
 export class PartitionedKeyValueTableDao<T extends string> implements DynamoDao {
@@ -59,15 +58,13 @@ export class PartitionedKeyValueTable {
 
   constructor({
     dynamo = new DynamoDBClient(),
-    tableName = dynamoTableName('partitioned_keys'),
+    tableName,
     monitoring = noOpMonitoring(),
   }: {
     dynamo?: DynamoDBClient;
-    tableName?: DynamoTableName;
+    tableName: DynamoTableName;
     monitoring?: Monitoring;
-  } = {}) {
-    assertTableNameValid(tableName);
-
+  }) {
     this.tableName = tableName;
 
     this.dynamo = dynamo;
