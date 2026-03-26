@@ -1,9 +1,71 @@
 {
   "name": "@paradoxical-io/common-aws",
-  "version": "2.9.0",
-  "description": "Common aws for paradox services",
+  "version": "3.0.0",
+  "description": "Common aws utilities",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./dynamo/keys": {
+      "types": "./dist/dynamo/keys/index.d.ts",
+      "import": "./dist/dynamo/keys/index.js",
+      "require": "./dist/dynamo/keys/index.js"
+    },
+    "./dynamo": {
+      "types": "./dist/dynamo/index.d.ts",
+      "import": "./dist/dynamo/index.js",
+      "require": "./dist/dynamo/index.js"
+    },
+    "./monitoring": {
+      "types": "./dist/monitoring/index.d.ts",
+      "import": "./dist/monitoring/index.js",
+      "require": "./dist/monitoring/index.js"
+    },
+    "./cloudfront": {
+      "types": "./dist/cloudfront/index.d.ts",
+      "import": "./dist/cloudfront/index.js",
+      "require": "./dist/cloudfront/index.js"
+    },
+    "./cloudwatch": {
+      "types": "./dist/cloudwatch/index.d.ts",
+      "import": "./dist/cloudwatch/index.js",
+      "require": "./dist/cloudwatch/index.js"
+    },
+    "./sns": {
+      "types": "./dist/sns/index.d.ts",
+      "import": "./dist/sns/index.js",
+      "require": "./dist/sns/index.js"
+    },
+    "./sqs": {
+      "types": "./dist/sqs/index.d.ts",
+      "import": "./dist/sqs/index.js",
+      "require": "./dist/sqs/index.js"
+    },
+    "./s3": {
+      "types": "./dist/s3/index.d.ts",
+      "import": "./dist/s3/index.js",
+      "require": "./dist/s3/index.js"
+    },
+    "./parameter-store": {
+      "types": "./dist/parameter-store/index.d.ts",
+      "import": "./dist/parameter-store/index.js",
+      "require": "./dist/parameter-store/index.js"
+    },
+    "./lambda": {
+      "types": "./dist/lambda/metrics.d.ts",
+      "import": "./dist/lambda/metrics.js",
+      "require": "./dist/lambda/metrics.js"
+    },
+    "./gateway": {
+      "types": "./dist/gateway/apiGatewayWebsocket.d.ts",
+      "import": "./dist/gateway/apiGatewayWebsocket.js",
+      "require": "./dist/gateway/apiGatewayWebsocket.js"
+    }
+  },
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
@@ -20,35 +82,116 @@
   "author": "Anton Kropp",
   "license": "MIT",
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.150",
-    "@types/aws4": "^1.11.6",
-    "@types/lodash": "^4.17.18",
-    "@types/nodemailer": "^6.4.17"
-  },
-  "optionalDependencies": {
-    "@paradoxical-io/common-test": "workspace:packages/common-test"
-  },
-  "dependencies": {
-    "@aws-sdk/client-apigatewaymanagementapi": "^3.835.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.835.0",
-    "@aws-sdk/client-dynamodb": "^3.835.0",
-    "@aws-sdk/client-kms": "^3.835.0",
-    "@aws-sdk/client-s3": "^3.837.0",
-    "@aws-sdk/client-sns": "^3.835.0",
-    "@aws-sdk/client-sqs": "^3.835.0",
-    "@aws-sdk/client-ssm": "^3.835.0",
-    "@aws-sdk/client-sts": "^3.835.0",
-    "@aws-sdk/cloudfront-signer": "^3.821.0",
-    "@aws-sdk/credential-provider-node": "^3.835.0",
-    "@aws-sdk/credential-providers": "^3.835.0",
-    "@aws-sdk/s3-request-presigner": "^3.837.0",
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.1002.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1002.0",
+    "@aws-sdk/client-dynamodb": "^3.1002.0",
+    "@aws-sdk/client-kms": "^3.1002.0",
+    "@aws-sdk/client-s3": "^3.1002.0",
+    "@aws-sdk/client-sns": "^3.1002.0",
+    "@aws-sdk/client-sqs": "^3.1002.0",
+    "@aws-sdk/client-ssm": "^3.1002.0",
+    "@aws-sdk/client-sts": "^3.1002.0",
+    "@aws-sdk/cloudfront-signer": "^3.1002.0",
+    "@aws-sdk/credential-provider-node": "^3.972.0",
+    "@aws-sdk/credential-providers": "^3.1002.0",
+    "@aws-sdk/s3-request-presigner": "^3.1002.0",
     "@aws-sdk/util-retry": "^3.374.0",
     "@aws/dynamodb-data-mapper": "^0.7.3",
     "@aws/dynamodb-data-mapper-annotations": "^0.7.3",
     "@paradoxical-io/common-server": "workspace:packages/common-server",
-    "@paradoxical-io/types": "workspace:packages/types",
+    "@types/aws-lambda": "^8.10.150",
+    "@types/aws4": "^1.11.6",
+    "@types/lodash": "^4.17.18",
+    "@types/nodemailer": "^6.4.17",
     "aws-lambda": "^1.0.7",
-    "datadog-lambda-js": "^3.59.0",
+    "datadog-lambda-js": "^3.59.0"
+  },
+  "optionalDependencies": {
+    "@paradoxical-io/common-test": "workspace:packages/common-test"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.1002.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.1002.0",
+    "@aws-sdk/client-dynamodb": "^3.1002.0",
+    "@aws-sdk/client-kms": "^3.1002.0",
+    "@aws-sdk/client-s3": "^3.1002.0",
+    "@aws-sdk/client-sns": "^3.1002.0",
+    "@aws-sdk/client-sqs": "^3.1002.0",
+    "@aws-sdk/client-ssm": "^3.1002.0",
+    "@aws-sdk/client-sts": "^3.1002.0",
+    "@aws-sdk/cloudfront-signer": "^3.1002.0",
+    "@aws-sdk/credential-provider-node": "^3.972.0",
+    "@aws-sdk/credential-providers": "^3.1002.0",
+    "@aws-sdk/s3-request-presigner": "^3.1002.0",
+    "@aws-sdk/util-retry": "^3.374.0",
+    "@aws/dynamodb-data-mapper": "^0.7.3",
+    "@aws/dynamodb-data-mapper-annotations": "^0.7.3",
+    "@paradoxical-io/common-server": "workspace:packages/common-server",
+    "aws-lambda": "^1.0.7",
+    "datadog-lambda-js": "^3.59.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-apigatewaymanagementapi": {
+      "optional": true
+    },
+    "@aws-sdk/client-cloudwatch-logs": {
+      "optional": true
+    },
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/client-kms": {
+      "optional": true
+    },
+    "@aws-sdk/client-s3": {
+      "optional": true
+    },
+    "@aws-sdk/client-sns": {
+      "optional": true
+    },
+    "@aws-sdk/client-sqs": {
+      "optional": true
+    },
+    "@aws-sdk/client-ssm": {
+      "optional": true
+    },
+    "@aws-sdk/client-sts": {
+      "optional": true
+    },
+    "@aws-sdk/cloudfront-signer": {
+      "optional": true
+    },
+    "@aws-sdk/credential-provider-node": {
+      "optional": true
+    },
+    "@aws-sdk/credential-providers": {
+      "optional": true
+    },
+    "@aws-sdk/s3-request-presigner": {
+      "optional": true
+    },
+    "@aws-sdk/util-retry": {
+      "optional": true
+    },
+    "@aws/dynamodb-data-mapper": {
+      "optional": true
+    },
+    "@aws/dynamodb-data-mapper-annotations": {
+      "optional": true
+    },
+    "@paradoxical-io/common-server": {
+      "optional": true
+    },
+    "aws-lambda": {
+      "optional": true
+    },
+    "datadog-lambda-js": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@paradoxical-io/common": "workspace:packages/common",
+    "@paradoxical-io/types": "workspace:packages/types",
     "joi": "^17.13.3",
     "lodash": "^4.17.21"
   },
