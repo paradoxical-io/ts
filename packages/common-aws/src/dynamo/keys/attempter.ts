@@ -28,10 +28,7 @@ interface AttemptsConfig {
  * A way to handle time/value based attempts
  */
 export class LimitedAttempt {
-  constructor(
-    private reader: PartitionedKeyValueTable = new PartitionedKeyValueTable(),
-    private timeProvider = defaultTimeProvider()
-  ) {}
+  constructor(private reader: PartitionedKeyValueTable, private timeProvider = defaultTimeProvider()) {}
 
   /**
    * Attempts a time expire-able, amount limited action. If the attempt is expired

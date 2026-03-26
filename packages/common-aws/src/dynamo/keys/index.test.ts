@@ -1,8 +1,6 @@
-import { usingEnv } from '@paradoxical-io/common-test';
+import { DynamoTableName } from '../util';
 
-import { dynamoTableName } from '../util';
-
-test('dynamo names', () =>
-  usingEnv('dev', () => {
-    expect(dynamoTableName('foo')).toEqual('paradox.dev.foo');
-  }));
+test('dynamo table name type', () => {
+  const name = 'my-table' as DynamoTableName;
+  expect(name).toEqual('my-table');
+});

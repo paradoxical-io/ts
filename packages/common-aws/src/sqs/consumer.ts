@@ -8,13 +8,12 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { defaultTimeProvider, sleep, TimeProvider } from '@paradoxical-io/common';
-import { currentEnvironment, isLocal, signals, withNewTrace } from '@paradoxical-io/common-server';
+import { signals, withNewTrace } from '@paradoxical-io/common-server';
 import { bottom, Brand, EpochMS, Milliseconds, notNullOrUndefined, Seconds } from '@paradoxical-io/types';
 
-import { PartitionedKeyValueTable } from '../dynamo';
 import { Logger, Metrics, Monitoring, noOpMonitoring } from '../monitoring';
 import { SQSConfig } from './config';
-import { DevProxyProvider, ProxyQueueProvider } from './proxy/proxyProvider';
+import { ProxyQueueProvider } from './proxy/proxyProvider';
 import { getInvisibilityDelay, SQSEvent } from './publisher';
 
 export type Max10 = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 9 | 10;
@@ -486,11 +485,6 @@ export abstract class SQSConsumer<T> implements MessageProcessor<T> {
   }
 
   private async proxy(messages: Message[] | undefined) {
-    // proxy not allowed in prod or when running local
-    if (currentEnvironment() === 'prod' || isLocal) {
-      return;
-    }
-
     if (!messages) {
       return;
     }
@@ -567,23 +561,23 @@ export class FunctionalConsumerRaw<T> extends SQSConsumer<T> {
 export function newConsumer<T>(
   method: (event: T) => Promise<MessageProcessorResult>,
   config: SQSConfig,
-  monitoring?: Monitoring
+  opts?: { monitoring?: Monitoring; proxyProvider?: ProxyQueueProvider }
 ) {
   return new FunctionalConsumer<T>(method, config.queueUrl, {
     maxNumberOfMessages: config.maxNumberOfMessages,
-    proxyProvider: currentEnvironment() === 'prod' ? undefined : new DevProxyProvider(new PartitionedKeyValueTable()),
-    monitoring,
+    proxyProvider: opts?.proxyProvider,
+    monitoring: opts?.monitoring,
   });
 }
 
 export function newRawConsumer<T>(
   method: (event: SQSEvent<T>) => Promise<MessageProcessorResult>,
   config: SQSConfig,
-  monitoring?: Monitoring
+  opts?: { monitoring?: Monitoring; proxyProvider?: ProxyQueueProvider }
 ) {
   return new FunctionalConsumerRaw<T>(method, config.queueUrl, {
     maxNumberOfMessages: config.maxNumberOfMessages,
-    proxyProvider: currentEnvironment() === 'prod' ? undefined : new DevProxyProvider(new PartitionedKeyValueTable()),
-    monitoring,
+    proxyProvider: opts?.proxyProvider,
+    monitoring: opts?.monitoring,
   });
 }

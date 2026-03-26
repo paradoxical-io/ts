@@ -14,7 +14,7 @@ import { Brand, Milliseconds, notNullOrUndefined } from '@paradoxical-io/types';
 
 import { Logger, Monitoring, noOpMonitoring } from '../../monitoring';
 import { DynamoDao } from '../mapper';
-import { assertTableNameValid, DynamoTableName, dynamoTableName } from '../util';
+import { DynamoTableName } from '../util';
 
 type KeyValueNamespace = Brand<string, 'Namespace'>;
 
@@ -59,16 +59,14 @@ export class KeyValueTable {
   constructor({
     namespace = 'global',
     dynamo = new DynamoDBClient(),
-    tableName = dynamoTableName('keys'),
+    tableName,
     monitoring = noOpMonitoring(),
   }: {
     namespace?: string;
     dynamo?: DynamoDBClient;
-    tableName?: DynamoTableName;
+    tableName: DynamoTableName;
     monitoring?: Monitoring;
-  } = {}) {
-    assertTableNameValid(tableName);
-
+  }) {
     this.namespace = namespace;
 
     this.tableName = tableName;

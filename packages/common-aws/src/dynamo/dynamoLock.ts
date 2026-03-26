@@ -11,7 +11,7 @@ import { EpochSeconds } from '@paradoxical-io/types';
 
 import { Logger, Monitoring, noOpMonitoring } from '../monitoring';
 import { DynamoDao } from './mapper';
-import { DynamoTableName, dynamoTableName } from './util';
+import { DynamoTableName } from './util';
 
 export class DynamoLock implements LockApi {
   private readonly dynamo: DynamoDBClient;
@@ -24,15 +24,15 @@ export class DynamoLock implements LockApi {
 
   constructor({
     dynamo = new DynamoDBClient(),
-    tableName = dynamoTableName('locks'),
+    tableName,
     timeProvider = defaultTimeProvider(),
     monitoring = noOpMonitoring(),
   }: {
     dynamo?: DynamoDBClient;
-    tableName?: DynamoTableName;
+    tableName: DynamoTableName;
     timeProvider?: TimeProvider;
     monitoring?: Monitoring;
-  } = {}) {
+  }) {
     this.dynamo = dynamo;
 
     this.tableName = tableName;

@@ -1,7 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { CompoundKey } from '@paradoxical-io/types';
 
-import { DynamoTableName, dynamoTableName } from '../util';
+import { DynamoTableName } from '../util';
 import { PartitionedKeyValueTable } from './partitionedKeyTable';
 import { PartitionedKeyValueCounter } from './partitionedKeyValueCounter';
 
@@ -10,11 +10,11 @@ export class PartitionedKeys {
 
   static default({
     dynamo = new DynamoDBClient(),
-    tableName = dynamoTableName('partitioned_keys'),
+    tableName,
   }: {
     dynamo?: DynamoDBClient;
-    tableName?: DynamoTableName;
-  } = {}) {
+    tableName: DynamoTableName;
+  }) {
     return new PartitionedKeys(
       new PartitionedKeyValueTable({ dynamo, tableName }),
       new PartitionedKeyValueCounter({ dynamo, tableName })
