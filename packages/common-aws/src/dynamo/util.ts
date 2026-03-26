@@ -1,22 +1,54 @@
-import { currentEnvironment } from '@paradoxical-io/common-server';
+import { getSchema } from '@aws/dynamodb-data-mapper';
+import { keysFromSchema } from '@aws/dynamodb-data-marshaller';
+import {
+  CreateTableCommand,
+  DeleteTableCommand,
+  DynamoDBClient,
+  waitUntilTableExists,
+  waitUntilTableNotExists,
+} from '@aws-sdk/client-dynamodb';
 import { Brand } from '@paradoxical-io/types';
+
+import { DynamoDao } from './mapper';
 
 export type DynamoTableName = Brand<string, 'DynamoTableName'>;
 
-/**
- * Create a standard dynamo table name in the form of paradox.<env>.<name>
- * @param name the suffix of the name
- */
-export function dynamoTableName(name: string): DynamoTableName {
-  const env = currentEnvironment() === 'local' ? 'dev' : currentEnvironment();
+export class DynamoUtil {
+  constructor(private readonly dynamo: DynamoDBClient) {}
 
-  return `paradox.${env}.${name}` as DynamoTableName;
-}
+  async createTable<T extends DynamoDao>(descriptor: new () => T, tableName?: string): Promise<void> {
+    const schema = getSchema(descriptor.prototype);
+    const { attributes, tableKeys } = keysFromSchema(schema);
 
-export function assertTableNameValid(name: string) {
-  if (currentEnvironment() !== 'local' && !name.includes(`.${currentEnvironment()}.`)) {
-    throw new Error(
-      `Table name must include current environment name in the format of "paradox.<env>.<name>" as a safetynet. Name is ${name}`
-    );
+    const attributeDefs = Object.keys(attributes).map(name => ({
+      AttributeName: name,
+      AttributeType: attributes[name],
+    }));
+
+    const keySchema = Object.keys(tableKeys).map(name => ({
+      AttributeName: name,
+      KeyType: tableKeys[name],
+    }));
+
+    const command = new CreateTableCommand({
+      TableName: tableName,
+      AttributeDefinitions: attributeDefs,
+      KeySchema: keySchema,
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1,
+      },
+    });
+
+    const result = await this.dynamo.send(command);
+
+    if (result.TableDescription?.TableStatus !== 'ACTIVE') {
+      await waitUntilTableExists({ client: this.dynamo, maxWaitTime: 30 }, { TableName: tableName });
+    }
+  }
+
+  async removeTable(tableName: string): Promise<void> {
+    await this.dynamo.send(new DeleteTableCommand({ TableName: tableName }));
+    await waitUntilTableNotExists({ client: this.dynamo, maxWaitTime: 30 }, { TableName: tableName });
   }
 }
